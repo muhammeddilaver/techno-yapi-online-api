@@ -1,15 +1,15 @@
 import Joi from 'joi';
 
 const ProductSchema = Joi.object({
-  ad: Joi.string().required(),
-  stok: Joi.number(),
-  fiyat: Joi.number().required(),
-  carpan: Joi.number(),
-  aciklama: Joi.string(),
-  photo: Joi.string(),
-  durum: Joi.boolean(),
-  marka: Joi.string(),
-  kategori_id: Joi.string(),
+  name: Joi.string().required(),
+  inventory: Joi.number(),
+  price: Joi.number().required(),
+  factor: Joi.number(),
+  description: Joi.string(),
+  photos: Joi.string(),
+  status: Joi.boolean(),
+  brand: Joi.string(),
+  category_id: Joi.string(),
 });
 
 export default ProductSchema;

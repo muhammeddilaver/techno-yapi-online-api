@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const CategorySchema = new Schema({
-    ad: {
+    name: {
         type: String,
         required: true
     },
-    ust_kategori_id: {
+    parent_category_id: {
         type: Schema.Types.ObjectId
     }
 });

@@ -31,7 +31,7 @@ const Register = async (req, res, next) => {
         const data = await user.save();
         const userData = data.toObject();
 
-        delete userData.sifre;
+        delete userData.password;
         delete userData.__v;
 
         const accessToken = await signAccessToken({
@@ -66,7 +66,7 @@ const Login = async (req, res, next) => {
             throw Boom.notFound("The email address was not found.");
         }
 
-        const isMatched = await user.isValidPass(input.sifre);
+        const isMatched = await user.isValidPass(input.password);
         if (!isMatched) {
             throw Boom.unauthorized("email or password not correct");
         }
@@ -78,7 +78,7 @@ const Login = async (req, res, next) => {
         const refreshToken = await signRefreshToken(user._id);
 
         const userData = user.toObject();
-        delete userData.sifre;
+        delete userData.password;
         delete userData.__v;
 
         res.json({ user: userData, accessToken, refreshToken });
@@ -131,7 +131,7 @@ const Me = async (req, res, next) => {
 	const { user_id } = req.payload;
 
 	try {
-		const user = await Auth.findById(user_id).select("-sifre -__v");
+		const user = await Auth.findById(user_id).select("-password -__v");
 
 		res.json(user);
 	} catch (e) {

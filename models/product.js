@@ -3,32 +3,32 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
-    ad: {
+    name: {
         type: String,
         required: true,
     },
-    stok: {
+    inventory: {
         type: Number,
     },
-    fiyat: {
+    price: {
         type: Number,
     },
-    carpan: {
+    factor: {
         type: Number,
     },
-    aciklama: {
+    description: {
         type: String,
     },
     photos: {
         type: [String],
     },
-    durum: {
+    status: {
         type: Boolean,
     },
-    marka: {
+    brand: {
         type: String,
     },
-    kategori_id: {
+    category_id: {
         type: Schema.Types.ObjectId,
     },
 });

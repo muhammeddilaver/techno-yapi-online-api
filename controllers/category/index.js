@@ -50,17 +50,17 @@ const Get = async (req, res, next) => {
                 $lookup: {
                     from: 'products',
                     localField: '_id',
-                    foreignField: 'kategori_id',
+                    foreignField: 'category_id',
                     pipeline: [
                         { $skip: skip},
                         { $limit: limit }
                      ],
-                    as: 'urunler'
+                    as: 'productstable'
                 }
             },
             {
                 $unwind: {
-                    path: '$urunler',
+                    path: '$productstable',
                     preserveNullAndEmptyArrays: true
                 }
             },
@@ -68,32 +68,32 @@ const Get = async (req, res, next) => {
                 $group: {
                     _id: {
                         _id: '$_id',
-                        ad: '$ad'
+                        ad: '$name'
                     },
-                    urunler: {
-                        $push: '$urunler'
+                    products: {
+                        $push: '$productstable'
                     }
                 }
             },
             {
                 $project: {
                     _id: '$_id._id',
-                    ad: '$_id.ad',
-                    urunler: '$urunler'
+                    name: '$_id.name',
+                    products: '$productstable'
                 }
             }
         ]);
 
         if (category.length == 0) {
-            return next(Boom.notFound("Kategori bulunamadı."));
+            return next(Boom.notFound("Category not found"));
         }
 
-        if (category[0].urunler.length == 0) {
-            return next(Boom.notFound("Ürün bulunamadı."));
+        if (category[0].products.length == 0) {
+            return next(Boom.notFound("Product not found"));
         }
 
-        for (let i = 0; i < category[0].urunler.length; i++) {
-            category[0].urunler[i].fiyat = category[0].urunler[i].fiyat + ((category[0].urunler[i].fiyat * category[0].urunler[i].carpan) / 100);
+        for (let i = 0; i < category[0].products.length; i++) {
+            category[0].products[i].price = category[0].products[i].price + ((category[0].products[i].price * category[0].products[i].factor) / 100);
         }
 
         res.json(category);

@@ -17,7 +17,7 @@ router.post(
 );
 
 router.get(
-	"/ara/:ara",
+	"/search/:keyword",
 	//verifyAccessToken,
 	//grantAccess('readAny', 'product'),
 	// cache.route(),

@@ -2,23 +2,23 @@ import mongoose from 'mongoose';
 import bcrypt from "bcryptjs";
 
 const AuthSchema = new mongoose.Schema({
-    ad: {
+    name: {
         type: String,
         required: true
     },
-    firma_ad: {
+    company_name: {
         type: String
     }, 
-    telefon: {
+    phone: {
         type: String
     },
     email: {
         type: String
     },
-    adres: {
+    address: {
         type: String
     },
-    sifre: {
+    password: {
         type: String
     },
     role: {
@@ -32,8 +32,8 @@ AuthSchema.pre("save", async function (next) {
     try {
         if (this.isNew) {
             const salt = await bcrypt.genSalt(10);
-			const hashed = await bcrypt.hash(this.sifre, salt);
-			this.sifre = hashed;
+			const hashed = await bcrypt.hash(this.password, salt);
+			this.password = hashed;
         }
 
         next();
@@ -43,7 +43,7 @@ AuthSchema.pre("save", async function (next) {
 });
 
 AuthSchema.methods.isValidPass = async function (pass) {
-    return await bcrypt.compare(pass, this.sifre);
+    return await bcrypt.compare(pass, this.password);
 }
 
 const Auth = mongoose.model('auth', AuthSchema);

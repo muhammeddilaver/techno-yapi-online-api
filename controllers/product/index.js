@@ -14,7 +14,7 @@ const Create = async (req, res, next) => {
     }
 
     try {
-        input.kategori_id = new mongoose.Types.ObjectId(input.kategori_id);
+        input.category_id = new mongoose.Types.ObjectId(input.category_id);
         let photos = [];
         req.files.forEach(photo => {
             photos.push(photo.path);
@@ -40,10 +40,10 @@ const Get = async (req, res, next) => {
         const product = await Product.findById(product_id);
 
         if (!product) {
-            return next(Boom.badRequest("Ürün bulunamadı."));
+            return next(Boom.badRequest("Product is not found."));
         }
 
-        product.fiyat = product.fiyat + ((product.fiyat * product.carpan) / 100);
+        product.price = product.price + ((product.price * product.factor) / 100);
 
         res.json(product);
     } catch (e) {
@@ -60,26 +60,26 @@ const Search = async (req, res, next) => {
 
     const skip = (parseInt(page) - 1) * limit;
 
-    const { ara } = req.params;
+    const { keyword } = req.params;
 
-    if (!ara) {
-        return next(Boom.badRequest("Missing paramter (:ara)"));
+    if (!keyword) {
+        return next(Boom.badRequest("Missing paramter (:keyword)"));
     }
 
     try {
         const products = await Product.find({
-            ad: { $regex: ".*" + ara + ".*" },
+            name: { $regex: ".*" + keyword + ".*" },
         })
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
 
         if (products.length == 0) {
-            return next(Boom.notFound("Ürün bulunamadı."));
+            return next(Boom.notFound("Product is not found."));
         }
 
         for (let i = 0; i < products.length; i++) {
-            products[i].fiyat = products[i].fiyat + ((products[i].fiyat * products[i].carpan) / 100);
+            products[i].price = products[i].price + ((products[i].price * products[i].factor) / 100);
         }
 
         res.json(products);
@@ -118,7 +118,7 @@ const Delete = async (req, res, next) => {
         const deleted = await Product.findByIdAndDelete(product_id);
 
         if (!deleted) {
-            throw Boom.badRequest("Product not found.");
+            throw Boom.badRequest("Product is not found.");
         }
 
         res.json(deleted);
@@ -143,7 +143,7 @@ const GetList = async (req, res, next) => {
             .limit(limit);
 
         for (let i = 0; i < products.length; i++) {
-            products[i].fiyat = products[i].fiyat + ((products[i].fiyat * products[i].carpan) / 100);
+            products[i].price = products[i].price + ((products[i].price * products[i].factor) / 100);
         }
 
         res.json(products);

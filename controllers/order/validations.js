@@ -1,12 +1,12 @@
 import Joi from "joi";
 
 const OrderSchema = Joi.object({
-    urunler: Joi.string(),
-    iadeler: Joi.string(),
-    siparistarih: Joi.date(),
-    teslimattarih: Joi.date(),
-    durum: Joi.number(),
-    aciklama: Joi.string(),
+    products: Joi.string(),
+    returns: Joi.string(),
+    order_date: Joi.date(),
+    delivery_date: Joi.date(),
+    status: Joi.number(),
+    description: Joi.string(),
 });
 
 export { OrderSchema };

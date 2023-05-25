@@ -3,43 +3,43 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const OrderSchema = new Schema({
-    musteri_id: {
+    user_id: {
         type: Schema.Types.ObjectId,
     },
-    urunler: [
+    products: [
         {
-            urun_id: {
+            product_id: {
                 type: Schema.Types.ObjectId,
             },
-            fiyat: {
+            price: {
                 type: Number,
             },
-            adet: {
+            piece: {
                 type: Number,
             },
         },
     ],
-    iadeler: [
+    returns: [
         {
-            urun_id: {
+            product_id: {
                 type: Schema.Types.ObjectId,
             },
-            fiyat: {
+            price: {
                 type: Number,
             },
-            adet: {
+            piece: {
                 type: Number,
             },
         },
     ],
-    siparistarih: {
+    order_date: {
         type: Date,
         default: Date.now,
     },
-    teslimattarih: {
+    delivery_date: {
         type: Date,
     },
-    durum: {
+    status: {
         /*
             {
                 siparisverildi: 1,
@@ -51,10 +51,10 @@ const OrderSchema = new Schema({
         type: Number,
         default: 1,
     },
-    tutar: {
+    total_price: {
         type: Number,
     },
-    aciklama: {
+    description: {
         type: String,
     },
 });
