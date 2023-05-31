@@ -16,7 +16,7 @@ const Create = async (req, res, next) => {
     try {
         input.category_id = new mongoose.Types.ObjectId(input.category_id);
         let photos = [];
-        req.files.forEach(photo => {
+        req.files.forEach((photo) => {
             photos.push(photo.path);
         });
         input.photos = photos;
@@ -43,7 +43,7 @@ const Get = async (req, res, next) => {
             return next(Boom.badRequest("Product is not found."));
         }
 
-        product.price = product.price + ((product.price * product.factor) / 100);
+        product.price = product.price + (product.price * product.factor) / 100;
 
         res.json(product);
     } catch (e) {
@@ -67,19 +67,35 @@ const Search = async (req, res, next) => {
     }
 
     try {
-        const products = await Product.find({
-            name: { $regex: ".*" + keyword + ".*" },
-        })
-            .sort({ _id: -1 })
-            .skip(skip)
-            .limit(limit);
+        let products = null;
+        if (keyword != " ") {
+            products = await Product.find({
+                name: { $regex: ".*" + keyword + ".*" },
+            })
+                .sort({ _id: -1 })
+                .skip(skip)
+                .limit(limit);
 
-        if (products.length == 0) {
-            return next(Boom.notFound("Product is not found."));
-        }
+            if (products.length == 0) {
+                return next(Boom.notFound("Product is not found."));
+            }
 
-        for (let i = 0; i < products.length; i++) {
-            products[i].price = products[i].price + ((products[i].price * products[i].factor) / 100);
+            for (let i = 0; i < products.length; i++) {
+                products[i].price =
+                    products[i].price +
+                    (products[i].price * products[i].factor) / 100;
+            }
+        } else {
+            products = await Product.find({})
+                .sort({ _id: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            for (let i = 0; i < products.length; i++) {
+                products[i].price =
+                    products[i].price +
+                    (products[i].price * products[i].factor) / 100;
+            }
         }
 
         res.json(products);
@@ -93,9 +109,9 @@ const Update = async (req, res, next) => {
     const input = req.body;
 
     try {
-        if(req.files.length > 0){
+        if (req.files.length > 0) {
             let photos = [];
-            req.files.forEach(photo => {
+            req.files.forEach((photo) => {
                 photos.push(photo.path);
             });
             input.photos = photos;
@@ -143,7 +159,9 @@ const GetList = async (req, res, next) => {
             .limit(limit);
 
         for (let i = 0; i < products.length; i++) {
-            products[i].price = products[i].price + ((products[i].price * products[i].factor) / 100);
+            products[i].price =
+                products[i].price +
+                (products[i].price * products[i].factor) / 100;
         }
 
         res.json(products);

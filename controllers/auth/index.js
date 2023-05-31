@@ -7,7 +7,7 @@ import {
     verifyRefreshToken,
 } from "../../helpers/jwt.js";
 
-import {LoginValidation, RegisterValidation} from "./validations.js";
+import { LoginValidation, RegisterValidation } from "./validations.js";
 import redis from "../../config/redis.js";
 
 const Register = async (req, res, next) => {
@@ -16,7 +16,6 @@ const Register = async (req, res, next) => {
     const { error } = RegisterValidation.validate(input);
 
     if (error) {
-        console.log(123);
         return next(Boom.badRequest(error.details[0].message));
     }
 
@@ -46,8 +45,8 @@ const Register = async (req, res, next) => {
             refreshToken,
         });
     } catch (error) {
-		next(error);
-	}
+        next(error);
+    }
 };
 
 const Login = async (req, res, next) => {
@@ -63,7 +62,7 @@ const Login = async (req, res, next) => {
         const user = await Auth.findOne({ email: input.email });
 
         if (!user) {
-            throw Boom.notFound("The email address was not found.");
+            throw Boom.unauthorized("The email address was not found.");
         }
 
         const isMatched = await user.isValidPass(input.password);
@@ -75,6 +74,7 @@ const Login = async (req, res, next) => {
             user_id: user._id,
             role: user.role,
         });
+
         const refreshToken = await signRefreshToken(user._id);
 
         const userData = user.toObject();
@@ -88,61 +88,75 @@ const Login = async (req, res, next) => {
 };
 
 const RefreshToken = async (req, res, next) => {
-	const { refresh_token } = req.body;
+    const { refresh_token } = req.body;
 
-	try {
-		if (!refresh_token) {
-			throw Boom.badRequest();
-		}
+    try {
+        if (!refresh_token) {
+            throw Boom.badRequest();
+        }
 
-		const user_id = await verifyRefreshToken(refresh_token);
-		const accessToken = await signAccessToken(user_id);
-		const refreshToken = await signRefreshToken(user_id);
+        const user_id = await verifyRefreshToken(refresh_token);
+        const accessToken = await signAccessToken(user_id);
+        const refreshToken = await signRefreshToken(user_id);
 
-		res.json({ accessToken, refreshToken });
-	} catch (e) {
-		next(e);
-	}
+        res.json({ accessToken, refreshToken });
+    } catch (e) {
+        next(e);
+    }
 };
 
 const Logout = async (req, res, next) => {
-	try {
-		const { refresh_token } = req.body;
-		if (!refresh_token) {
-			throw Boom.badRequest();
-		}
+    try {
+        const { refresh_token } = req.body;
+        if (!refresh_token) {
+            throw Boom.badRequest();
+        }
 
-		const user_id = await verifyRefreshToken(refresh_token);
-        redis
-		const data = await redis.del(user_id);
+        const user_id = await verifyRefreshToken(refresh_token);
 
-		if (!data) {
-			throw Boom.badRequest();
-		}
+        const deleteUserData = async (user_id) => {
+            return new Promise((resolve, reject) => {
+                redis.del(user_id, (err, reply) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(reply);
+                    }
+                });
+            });
+        };
 
-		res.json({ message: "success" });
-	} catch (e) {
-		console.log(e);
-		return next(e);
-	}
+        const data = await deleteUserData(user_id);
+
+        console.log(data);
+
+        if (!data) {
+            throw Boom.badRequest();
+        }
+
+        res.json({ message: "success" });
+    } catch (e) {
+        console.log(e);
+        return next(e);
+    }
 };
 
 const Me = async (req, res, next) => {
-	const { user_id } = req.payload;
+    const { user_id } = req.payload;
 
-	try {
-		const user = await Auth.findById(user_id).select("-password -__v");
+    try {
+        const user = await Auth.findById(user_id).select("-password -__v");
 
-		res.json(user);
-	} catch (e) {
-		next(e);
-	}
+        res.json(user);
+    } catch (e) {
+        next(e);
+    }
 };
 
-export default { 
-	Register, 
-	Login, 
+export default {
+    Register,
+    Login,
     RefreshToken,
     Logout,
-    Me
+    Me,
 };

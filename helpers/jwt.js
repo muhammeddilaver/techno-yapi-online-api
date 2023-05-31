@@ -53,7 +53,7 @@ const signRefreshToken = (user_id) => {
         };
         const options = {
             expiresIn: "180d",
-            issuer: "ecommerce.app",
+            issuer: "127.0.0.1",
         };
 
         JWT.sign(
@@ -65,7 +65,6 @@ const signRefreshToken = (user_id) => {
                     console.log(err);
                     reject(Boom.internal());
                 }
-
                 redis.set(user_id.toString(), token, "EX", 180 * 24 * 60 * 60);
 
                 resolve(token);
@@ -85,7 +84,20 @@ const verifyRefreshToken = async (refresh_token) => {
                 }
 
                 const { user_id } = payload;
-                const user_token = await redis.get(user_id);
+
+                const getUserToken = async (user_id) => {
+                    return new Promise((resolve, reject) => {
+                      redis.get(user_id, (err, reply) => {
+                        if (err) {
+                          reject(err);
+                        } else {
+                          resolve(reply);
+                        }
+                      });
+                    });
+                  };
+
+                const user_token = await getUserToken(user_id);
 
                 if (!user_token) {
                     return reject(Boom.unauthorized());
