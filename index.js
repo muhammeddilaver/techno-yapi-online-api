@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 
-app.use(router);
+app.use('/', router);
 
 app.use((req, res, next) => {
     return next(Boom.notFound("This route does not exist."));
