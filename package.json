@@ -8,7 +8,8 @@
   "license": "MIT",
   "homepage": "",
   "scripts": {
-    "start": "node netlify.js"
+    "start": "./node_modules/.bin/netlify-lambda serve src",
+    "build": "./node_modules/.bin/netlify-lambda build src"
   },
   "keywords": [],
   "dependencies": {
