@@ -2,13 +2,13 @@
   "name": "techno-yapi-online-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "netlify.js",
   "type": "module",
   "author": "muhammeddilaver <muhammed.dilaver@gmail.com>",
   "license": "MIT",
   "homepage": "",
   "scripts": {
-    "start": "node index.js"
+    "start": "node netlify.js"
   },
   "keywords": [],
   "dependencies": {
