@@ -18,18 +18,6 @@ app.use((req, res, next) => {
     return next(Boom.notFound("This route does not exist."));
 });
 
-app.use((err, req, res, next) => {
-    console.log(err);
 
-    if (err) {
-        if (err.output) {
-            return res
-                .status(err.output.statusCode || 500)
-                .json(err.output.payload);
-        }
-
-        return res.status(500).json(err);
-    }
-});
 
 export const handler = serverless(app);
