@@ -7,10 +7,6 @@
   "author": "muhammeddilaver <muhammed.dilaver@gmail.com>",
   "license": "MIT",
   "homepage": "",
-  "scripts": {
-    "start": "./node_modules/.bin/netlify-lambda serve src",
-    "build": "./node_modules/.bin/netlify-lambda build src"
-  },
   "keywords": [],
   "dependencies": {
     "@netlify/functions": "^1.6.0",
@@ -25,6 +21,7 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.2.0",
     "multer": "^1.4.5-lts.1",
+    "netlify-cli": "^15.2.0",
     "nodemon": "^2.0.22",
     "path": "^0.12.7",
     "redis": "^4.6.6",
