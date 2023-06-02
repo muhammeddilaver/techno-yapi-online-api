@@ -21,7 +21,7 @@ const Create = async (req, res, next) => {
 
         for (let i = 0; i < input.products.length; i++) {
             let product_info = await Product.findById(
-                new mongoose.Types.ObjectId(input.products[i].product_id)
+                new mongoose.Types.ObjectId(input.products[i]._id)
             );
             input.products[i].price =
                 product_info.price +
