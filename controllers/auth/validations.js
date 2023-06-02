@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 const RegisterValidation = Joi.object({
-    ad: Joi.string().required(),
+    name: Joi.string().required(),
     company_name: Joi.string().required(),
     phone: Joi.string().required(),
     email: Joi.string().email().required(),
