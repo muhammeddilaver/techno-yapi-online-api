@@ -193,7 +193,7 @@ const GetList = async (req, res, next) => {
             .skip(skip)
             .limit(limit)
             .lean();
-
+        
         /* for (let i = 0; i < order.length; i++) {
             for (let index = 0; index < order[i].products.length; index++) {
                 let product_info = await Product.findById(
