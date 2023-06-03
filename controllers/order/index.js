@@ -197,7 +197,7 @@ const GetList = async (req, res, next) => {
         for (let i = 0; i < order.length; i++) {
             for (let index = 0; index < order[i].products.length; index++) {
                 let product_info = await Product.findById(
-                    order[i].products[index].product_id
+                    order[i].products[index]._id
                 );
                 order[i].products[index].name = product_info.name;
                 order[i].products[index].photos = product_info.photos;
@@ -207,7 +207,7 @@ const GetList = async (req, res, next) => {
 
             for (let index = 0; index < order[i].returns.length; index++) {
                 let product_info = await Product.findById(
-                    order[i].returns[index].product_id
+                    order[i].returns[index]._id
                 );
                 order[i].returns[index].name = product_info.name;
                 order[i].returns[index].photos = product_info.photos;
