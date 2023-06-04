@@ -75,7 +75,7 @@ const Get = async (req, res, next) => {
 
         for (let index = 0; index < order[0].products.length; index++) {
             let product_info = await Product.findById(
-                order[0].products[index]._id
+                order[0].products[index].urun_id
             );
             order[0].products[index].name = product_info.name;
             order[0].products[index].photos = product_info.photos;
@@ -85,7 +85,7 @@ const Get = async (req, res, next) => {
 
         for (let index = 0; index < order[0].returns.length; index++) {
             let product_info = await Product.findById(
-                order[0].returns[index]._id
+                order[0].returns[index].product_id
             );
             order[0].returns[index].name = product_info.name;
             order[0].returns[index].photos = product_info.photos;
@@ -194,27 +194,7 @@ const GetList = async (req, res, next) => {
             .limit(limit)
             .lean();
 
-        /* for (let i = 0; i < order.length; i++) {
-            for (let index = 0; index < order[i].products.length; index++) {
-                let product_info = await Product.findById(
-                    order[i].products[index]._id
-                );
-                order[i].products[index].name = product_info.name;
-                order[i].products[index].photos = product_info.photos;
-                order[i].products[index].category_id = product_info.category_id;
-                order[i].products[index].brand = product_info.brand;
-            }
-
-            for (let index = 0; index < order[i].returns.length; index++) {
-                let product_info = await Product.findById(
-                    order[i].returns[index]._id
-                );
-                order[i].returns[index].name = product_info.name;
-                order[i].returns[index].photos = product_info.photos;
-                order[i].returns[index].category_id = product_info.category_id;
-                order[i].returns[index].brand = product_info.brand;
-            }
-        } */
+        
 
         res.json(order);
     } catch (e) {
