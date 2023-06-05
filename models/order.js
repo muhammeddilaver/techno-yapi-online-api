@@ -17,19 +17,17 @@ const OrderSchema = new Schema({
             piece: {
                 type: Number,
             },
-        },
-    ],
-    returns: [
-        {
-            product_id: {
-                type: Schema.Types.ObjectId,
-            },
-            price: {
+            status: {
+                /*
+                    {
+                        1: ordered,
+                        2: return request,
+                        4: returned
+                    }
+                */
                 type: Number,
-            },
-            piece: {
-                type: Number,
-            },
+                default: 1,
+            }
         },
     ],
     order_date: {

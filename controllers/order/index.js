@@ -83,16 +83,6 @@ const Get = async (req, res, next) => {
             order[0].products[index].brand = product_info.brand;
         }
 
-        for (let index = 0; index < order[0].returns.length; index++) {
-            let product_info = await Product.findById(
-                order[0].returns[index]._id
-            );
-            order[0].returns[index].name = product_info.name;
-            order[0].returns[index].photos = product_info.photos;
-            order[0].returns[index].category_id = product_info.category_id;
-            order[0].returns[index].brand = product_info.brand;
-        }
-
         res.json(order);
     } catch (e) {
         next(e);
@@ -100,6 +90,9 @@ const Get = async (req, res, next) => {
 };
 
 const Update = async (req, res, next) => {
+
+    //it needs to be edited.
+    
     const { order_id } = req.params;
     const input = req.body;
     const old = await Order.findById(new mongoose.Types.ObjectId(order_id));
@@ -131,17 +124,6 @@ const Update = async (req, res, next) => {
                 input.total_price +=
                     input.products[i].price * input.products[i].piece;
             }
-
-            input.returns = new mongoose.Types.Array(JSON.parse(input.returns));
-            input.returns.forEach((returned_product) => {
-                old.products.every((product) => {
-                    if (returned_product.product_id == product.product_id) {
-                        returned_product.price = product.price;
-                        return false;
-                    }
-                    return true;
-                });
-            });
         }
 
         const updated = await Order.findByIdAndUpdate(order_id, input, {
