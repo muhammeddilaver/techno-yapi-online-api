@@ -17,17 +17,10 @@ const OrderSchema = new Schema({
             piece: {
                 type: Number,
             },
-            status: {
-                /*
-                    {
-                        1: ordered,
-                        2: return request,
-                        4: returned
-                    }
-                */
+            return: {
                 type: Number,
-                default: 1,
-            }
+                default: 0,
+            },
         },
     ],
     order_date: {
@@ -54,6 +47,7 @@ const OrderSchema = new Schema({
     },
     description: {
         type: String,
+        default: "",
     },
 });
 

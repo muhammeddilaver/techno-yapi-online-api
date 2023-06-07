@@ -23,7 +23,9 @@ router.get(
 );
 
 router.get("/", Order.GetList);
-router.put("/:order_id", Order.Update);
+router.put("/:order_id/return", Order.Return);
+router.put("/:order_id/delete", Order.DeleteProduct);
+//router.put("/:order_id", Order.Update);
 router.delete("/:order_id", Order.Delete);
 
 export default router;

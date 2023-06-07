@@ -89,10 +89,74 @@ const Get = async (req, res, next) => {
     }
 };
 
-const Update = async (req, res, next) => {
+const Return = async (req, res, next) => {
+    const { order_id } = req.params;
+    const input = req.body;
+    const order = await Order.findById(new mongoose.Types.ObjectId(order_id));
+    const productIndexId = order.products.findIndex((product) => {
+        return product._id.toString() === input.returnProductId;
+    });
 
-    //it needs to be edited.
+    if (order.user_id != req.payload.user_id) {
+        return next(Boom.badRequest("This order is not yours."));
+    }
+
+    if (order.status !== 3) {
+        return next(Boom.badRequest("This order is not delivered."));
+    }
+
+    try {
+        order.products[productIndexId].return =
+            order.products[productIndexId].return + parseInt(input.returnCount);
+
+        const updated = await Order.findByIdAndUpdate(order_id, order, {
+            new: true,
+        });
+
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const DeleteProduct = async (req, res, next) => {
+    const { order_id } = req.params;
+    const input = req.body;
+    const order = await Order.findById(new mongoose.Types.ObjectId(order_id));
     
+    const productIndex = order.products.findIndex((product) => product._id.toString() === input.deleteProductId);
+    const deletePrice = order.products[productIndex].price * order.products[productIndex].piece;
+
+    order.products = order.products.filter((product) => product._id.toString() !== input.deleteProductId)
+
+    order.total_price = order.total_price - deletePrice;
+
+    if (order.user_id != req.payload.user_id) {
+        return next(Boom.badRequest("This order is not yours."));
+    }
+
+    if (order.status === 3) {
+        return next(
+            Boom.badRequest(
+                "This order is delivered. You can not delete any item"
+            )
+        );
+    }
+
+    try {
+        const updated = await Order.findByIdAndUpdate(order_id, order, {
+            new: true,
+        });
+
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const Update = async (req, res, next) => {
+    //it needs to be edited.
+
     const { order_id } = req.params;
     const input = req.body;
     const old = await Order.findById(new mongoose.Types.ObjectId(order_id));
@@ -176,8 +240,6 @@ const GetList = async (req, res, next) => {
             .limit(limit)
             .lean();
 
-        
-
         res.json(order);
     } catch (e) {
         next(e);
@@ -187,6 +249,8 @@ const GetList = async (req, res, next) => {
 export default {
     Create,
     Get,
+    Return,
+    DeleteProduct,
     Update,
     Delete,
     GetList,
