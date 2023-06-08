@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
 
 router.use("/auth", auth);
 router.use("/product", verifyAccessToken, product);
-router.use("/category", category);
+router.use("/category", verifyAccessToken, category);
 router.use("/order", verifyAccessToken, order);
 
 export default router;

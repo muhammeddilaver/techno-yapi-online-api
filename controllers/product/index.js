@@ -70,7 +70,7 @@ const Search = async (req, res, next) => {
         let products = null;
         if (keyword != " ") {
             products = await Product.find({
-                name: { $regex: ".*" + keyword + ".*" },
+                name: { $regex: new RegExp(keyword, "i") },
             })
                 .sort({ _id: -1 })
                 .skip(skip)

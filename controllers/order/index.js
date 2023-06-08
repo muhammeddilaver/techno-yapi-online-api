@@ -1,8 +1,9 @@
 import Product from "../../models/product.js";
 import Order from "../../models/order.js";
+import Auth from "../../models/auth.js";
 import Boom from "boom";
 import { OrderSchema } from "./validations.js";
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const limit = 12;
 
@@ -39,6 +40,50 @@ const Create = async (req, res, next) => {
     }
 };
 
+const GetList = async (req, res, next) => {
+    let { page } = req.query;
+
+    if (page < 1) {
+        page = 1;
+    }
+
+    const skip = (parseInt(page) - 1) * limit;
+
+    try {
+        const filter =
+            req.payload.role === "admin"
+                ? {}
+                : {
+                      user_id: new mongoose.Types.ObjectId(req.payload.user_id),
+                  };
+        const orders = await Order.aggregate()
+            .match(filter)
+            .sort({ order_date: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lookup({
+                from: "auths",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "client",
+            })
+            .unwind({
+                path: "$client",
+                preserveNullAndEmptyArrays: true,
+            })
+            .project({
+                "client.password": 0,
+                "client.__v": 0,
+                "client._id": 0,
+                "client.role": 0,
+            });
+
+        res.json(orders);
+    } catch (e) {
+        next(e);
+    }
+};
+
 const Get = async (req, res, next) => {
     const { order_id } = req.params;
 
@@ -47,27 +92,20 @@ const Get = async (req, res, next) => {
     }
 
     try {
-        const order = await Order.aggregate([
-            {
-                $match: {
-                    _id: new mongoose.Types.ObjectId(order_id),
-                },
-            },
-            {
-                $lookup: {
-                    from: "auths",
-                    localField: "user_id",
-                    foreignField: "_id",
-                    as: "client",
-                },
-            },
-            {
-                $unwind: {
-                    path: "$client",
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
-        ]);
+        const order = await Order.aggregate()
+            .match({
+                _id: new mongoose.Types.ObjectId(order_id),
+            })
+            .lookup({
+                from: "auths",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "client",
+            })
+            .unwind({
+                path: "$client",
+                preserveNullAndEmptyArrays: true,
+            });
 
         if (order[0].user_id != req.payload.user_id) {
             return next(Boom.badRequest("This order is not yours."));
@@ -123,11 +161,16 @@ const DeleteProduct = async (req, res, next) => {
     const { order_id } = req.params;
     const input = req.body;
     const order = await Order.findById(new mongoose.Types.ObjectId(order_id));
-    
-    const productIndex = order.products.findIndex((product) => product._id.toString() === input.deleteProductId);
-    const deletePrice = order.products[productIndex].price * order.products[productIndex].piece;
 
-    order.products = order.products.filter((product) => product._id.toString() !== input.deleteProductId)
+    const productIndex = order.products.findIndex(
+        (product) => product._id.toString() === input.deleteProductId
+    );
+    const deletePrice =
+        order.products[productIndex].price * order.products[productIndex].piece;
+
+    order.products = order.products.filter(
+        (product) => product._id.toString() !== input.deleteProductId
+    );
 
     order.total_price = order.total_price - deletePrice;
 
@@ -217,30 +260,6 @@ const Delete = async (req, res, next) => {
         }
 
         res.json(deleted);
-    } catch (e) {
-        next(e);
-    }
-};
-
-const GetList = async (req, res, next) => {
-    let { page } = req.query;
-
-    if (page < 1) {
-        page = 1;
-    }
-
-    const skip = (parseInt(page) - 1) * limit;
-
-    try {
-        const order = await Order.find({
-            user_id: req.payload.user_id,
-        })
-            .sort({ _id: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean();
-
-        res.json(order);
     } catch (e) {
         next(e);
     }

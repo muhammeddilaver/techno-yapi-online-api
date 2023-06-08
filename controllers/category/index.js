@@ -68,7 +68,7 @@ const Get = async (req, res, next) => {
                 $group: {
                     _id: {
                         _id: '$_id',
-                        ad: '$name'
+                        name: '$name'
                     },
                     products: {
                         $push: '$productstable'
