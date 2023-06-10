@@ -107,7 +107,7 @@ const Get = async (req, res, next) => {
                 preserveNullAndEmptyArrays: true,
             });
 
-        if (order[0].user_id != req.payload.user_id) {
+        if (req.payload.role !== 'admin' && (order[0].user_id != req.payload.user_id)) {
             return next(Boom.badRequest("This order is not yours."));
         }
 
