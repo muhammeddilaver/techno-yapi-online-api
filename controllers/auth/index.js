@@ -153,10 +153,45 @@ const Me = async (req, res, next) => {
     }
 };
 
+const UsersList = async (req, res, next) => {
+    try {
+        const users = await Auth.find({});
+
+        res.json(users);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const UsersSearch = async (req, res, next) => {
+
+    const { keyword } = req.params;
+
+    if (!keyword) {
+        return next(Boom.badRequest("Missing paramter (:keyword)"));
+    }
+
+    try {
+        const users = await Auth.find({
+            company_name: { $regex: new RegExp(keyword, "i") },
+        });
+
+        if (users.length == 0) {
+            return next(Boom.notFound("User is not found."));
+        }
+
+        res.json(users);
+    } catch (e) {
+        next(e);
+    }
+};
+
 export default {
     Register,
     Login,
     RefreshToken,
     Logout,
     Me,
+    UsersList,
+    UsersSearch
 };

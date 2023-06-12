@@ -1,9 +1,9 @@
 import Product from "../../models/product.js";
 import Order from "../../models/order.js";
-import Auth from "../../models/auth.js";
 import Boom from "boom";
 import { OrderSchema } from "./validations.js";
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
+import moment from "moment";
 
 const limit = 12;
 
@@ -43,21 +43,69 @@ const Create = async (req, res, next) => {
 const GetList = async (req, res, next) => {
     let { page } = req.query;
 
-    if (page < 1) {
+    if (page < 1 || !page) {
         page = 1;
     }
 
     const skip = (parseInt(page) - 1) * limit;
 
     try {
-        const filter =
-            req.payload.role === "admin"
-                ? {}
-                : {
-                      user_id: new mongoose.Types.ObjectId(req.payload.user_id),
-                  };
         const orders = await Order.aggregate()
-            .match(filter)
+            .match({
+                user_id: new mongoose.Types.ObjectId(req.payload.user_id),
+            })
+            .sort({ order_date: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lookup({
+                from: "auths",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "client",
+            })
+            .unwind({
+                path: "$client",
+                preserveNullAndEmptyArrays: true,
+            })
+            .project({
+                "client.password": 0,
+                "client.__v": 0,
+                "client._id": 0,
+                "client.role": 0,
+            });
+
+        res.json(orders);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const GetListAdmin = async (req, res, next) => {
+    let { page, client, startDate, endDate } = req.query;
+
+    if (page < 1 || !page) {
+        page = 1;
+    }
+
+    const skip = (parseInt(page) - 1) * limit;
+
+    try {
+        const orders = await Order.aggregate()
+            .match({
+                $and: [
+                    client
+                        ? { user_id: new mongoose.Types.ObjectId(client) }
+                        : {},
+                    startDate && endDate
+                        ? {
+                              order_date: {
+                                  $gte: moment(startDate, "DD/MM/YYYY").toDate(),
+                                  $lte: moment(endDate, "DD/MM/YYYY").toDate(),
+                              },
+                          }
+                        : {},
+                ],
+            })
             .sort({ order_date: -1 })
             .skip(skip)
             .limit(limit)
@@ -107,7 +155,10 @@ const Get = async (req, res, next) => {
                 preserveNullAndEmptyArrays: true,
             });
 
-        if (req.payload.role !== 'admin' && (order[0].user_id != req.payload.user_id)) {
+        if (
+            req.payload.role !== "admin" &&
+            order[0].user_id != req.payload.user_id
+        ) {
             return next(Boom.badRequest("This order is not yours."));
         }
 
@@ -119,6 +170,54 @@ const Get = async (req, res, next) => {
             order[0].products[index].photos = product_info.photos;
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
+        }
+
+        res.json(order);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const GetAdmin = async (req, res, next) => {
+    const { order_id } = req.params;
+
+    if (!order_id) {
+        return next(Boom.badRequest("Missing paramter (:order_id)"));
+    }
+
+    try {
+        const order = await Order.aggregate()
+            .match({
+                _id: new mongoose.Types.ObjectId(order_id),
+            })
+            .lookup({
+                from: "auths",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "client",
+            })
+            .unwind({
+                path: "$client",
+                preserveNullAndEmptyArrays: true,
+            });
+
+        if (
+            req.payload.role !== "admin" &&
+            order[0].user_id != req.payload.user_id
+        ) {
+            return next(Boom.badRequest("This order is not yours."));
+        }
+
+        for (let index = 0; index < order[0].products.length; index++) {
+            let product_info = await Product.findById(
+                order[0].products[index]._id
+            );
+            order[0].products[index].name = product_info.name;
+            order[0].products[index].photos = product_info.photos;
+            order[0].products[index].category_id = product_info.category_id;
+            order[0].products[index].brand = product_info.brand;
+            order[0].products[index].exact_price = product_info.price;
+            order[0].products[index].factor = product_info.factor;
         }
 
         res.json(order);
@@ -139,7 +238,7 @@ const Return = async (req, res, next) => {
         return next(Boom.badRequest("This order is not yours."));
     }
 
-    if (order.status !== 3) {
+    if (order.status !== 6) {
         return next(Boom.badRequest("This order is not delivered."));
     }
 
@@ -178,7 +277,7 @@ const DeleteProduct = async (req, res, next) => {
         return next(Boom.badRequest("This order is not yours."));
     }
 
-    if (order.status === 3) {
+    if (order.status === 6) {
         return next(
             Boom.badRequest(
                 "This order is delivered. You can not delete any item"
@@ -270,7 +369,7 @@ export default {
     Get,
     Return,
     DeleteProduct,
-    Update,
-    Delete,
     GetList,
+    GetListAdmin,
+    GetAdmin,
 };
