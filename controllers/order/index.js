@@ -296,6 +296,32 @@ const DeleteProduct = async (req, res, next) => {
     }
 };
 
+const UpdateOrderAdmin = async (req, res, next) => {
+
+    const { order_id } = req.params;
+    const input = req.body;
+
+    try {
+        input.products.map(async (product) => {
+            const oldProduct = await Product.findById(new mongoose.Types.ObjectId(product._id));
+            if(oldProduct.price !== product.exact_price){
+                const updatedProduct = await Product.findByIdAndUpdate(product._id, {price: product.exact_price});
+            }
+            if(oldProduct.factor !== product.factor){
+                const updatedProduct = await Product.findByIdAndUpdate(product._id, {factor: product.factor});
+            }
+        });
+
+        const updated = await Order.findByIdAndUpdate(order_id, input, {
+            new: true,
+        });
+
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+};
+
 const Update = async (req, res, next) => {
     //it needs to be edited.
 
@@ -372,4 +398,5 @@ export default {
     GetList,
     GetListAdmin,
     GetAdmin,
+    UpdateOrderAdmin,
 };

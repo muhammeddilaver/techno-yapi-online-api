@@ -20,6 +20,7 @@ router.get("/", Order.GetList);
 router.post("/", Order.Create);
 router.put("/:order_id/return", Order.Return);
 router.put("/:order_id/delete", Order.DeleteProduct);
+router.put("/:order_id", Order.UpdateOrderAdmin);
 
 //admin
 
