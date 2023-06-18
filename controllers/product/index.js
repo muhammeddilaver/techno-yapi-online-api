@@ -71,6 +71,7 @@ const Search = async (req, res, next) => {
         if (keyword != " ") {
             products = await Product.find({
                 name: { $regex: new RegExp(keyword, "i") },
+                status: true,
             })
                 .sort({ _id: -1 })
                 .skip(skip)
@@ -86,7 +87,7 @@ const Search = async (req, res, next) => {
                     (products[i].price * products[i].factor) / 100;
             }
         } else {
-            products = await Product.find({})
+            products = await Product.find({status: true})
                 .sort({ _id: -1 })
                 .skip(skip)
                 .limit(limit);

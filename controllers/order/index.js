@@ -23,14 +23,33 @@ const Create = async (req, res, next) => {
         input.status = input.status === 1 ? 1 : 3;
 
         for (let i = 0; i < input.products.length; i++) {
-            let product_info = await Product.findById(
-                new mongoose.Types.ObjectId(input.products[i]._id)
-            );
-            input.products[i].price =
-                product_info.price +
-                (product_info.price * product_info.factor) / 100;
-            input.total_price +=
-                input.products[i].price * input.products[i].piece;
+            if (input.products[i]._id) {
+                let product_info = await Product.findById(
+                    new mongoose.Types.ObjectId(input.products[i]._id)
+                );
+                input.products[i].price =
+                    product_info.price +
+                    (product_info.price * product_info.factor) / 100;
+                input.total_price +=
+                    input.products[i].price * input.products[i].piece;
+            } else {
+                const product = new Product({
+                    photos: [],
+                    brand: "",
+                    category_id: new mongoose.Types.ObjectId(
+                        "646a7d15ffb4ef83553f20b3"
+                    ),
+                    description: "",
+                    factor: 0,
+                    inventory: 100,
+                    name: input.products[i].name,
+                    price: 0,
+                    status: false,
+                });
+                const savedProductData = await product.save();
+                input.products[i]._id = savedProductData._id;
+                input.products[i].price = 0;
+            }
         }
 
         const order = new Order(input);
@@ -221,6 +240,7 @@ const GetAdmin = async (req, res, next) => {
             order[0].products[index].photos = product_info.photos;
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
+            order[0].products[index].status = product_info.status;
             if (order[0].status === 1 || order[0].status === 3) {
                 order[0].products[index].exact_price = product_info.price;
                 order[0].products[index].factor = product_info.factor;
@@ -248,7 +268,7 @@ const AcceptOrRejectOffer = async (req, res, next) => {
 
     try {
         const updated = await Order.findByIdAndUpdate(order_id, {
-            status: status
+            status: status,
         });
 
         res.json(updated);
@@ -337,14 +357,20 @@ const UpdateOrderAdmin = async (req, res, next) => {
                 const oldProduct = await Product.findById(
                     new mongoose.Types.ObjectId(product._id)
                 );
+                if(!product.status){
+                    await Product.findByIdAndUpdate(
+                        product._id,
+                        { status: true, name: product.name }
+                    );
+                }
                 if (oldProduct.price !== product.exact_price) {
-                    const updatedProduct = await Product.findByIdAndUpdate(
+                    await Product.findByIdAndUpdate(
                         product._id,
                         { price: product.exact_price }
                     );
                 }
                 if (oldProduct.factor !== product.factor) {
-                    const updatedProduct = await Product.findByIdAndUpdate(
+                    await Product.findByIdAndUpdate(
                         product._id,
                         { factor: product.factor }
                     );
