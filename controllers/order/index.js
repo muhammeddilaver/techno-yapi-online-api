@@ -19,6 +19,8 @@ const Create = async (req, res, next) => {
         input.user_id = req.payload.user_id;
         input.total_price = 0;
         input.products = new mongoose.Types.Array(JSON.parse(input.products));
+        console.log(input.status);
+        input.status = input.status === 1 ? 1 : 3;
 
         for (let i = 0; i < input.products.length; i++) {
             let product_info = await Product.findById(
@@ -99,7 +101,10 @@ const GetListAdmin = async (req, res, next) => {
                     startDate && endDate
                         ? {
                               order_date: {
-                                  $gte: moment(startDate, "DD/MM/YYYY").toDate(),
+                                  $gte: moment(
+                                      startDate,
+                                      "DD/MM/YYYY"
+                                  ).toDate(),
                                   $lte: moment(endDate, "DD/MM/YYYY").toDate(),
                               },
                           }
@@ -216,11 +221,37 @@ const GetAdmin = async (req, res, next) => {
             order[0].products[index].photos = product_info.photos;
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
-            order[0].products[index].exact_price = product_info.price;
-            order[0].products[index].factor = product_info.factor;
+            if (order[0].status === 1 || order[0].status === 3) {
+                order[0].products[index].exact_price = product_info.price;
+                order[0].products[index].factor = product_info.factor;
+            }
         }
 
         res.json(order);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const AcceptOrRejectOffer = async (req, res, next) => {
+    const { order_id } = req.params;
+    const status = req.body.status === 2 ? 4 : 7;
+    const order = await Order.findById(new mongoose.Types.ObjectId(order_id));
+
+    if (order.user_id != req.payload.user_id) {
+        return next(Boom.badRequest("This order is not yours."));
+    }
+
+    if (order.status !== 2) {
+        return next(Boom.badRequest("This order is not delivered."));
+    }
+
+    try {
+        const updated = await Order.findByIdAndUpdate(order_id, {
+            status: status
+        });
+
+        res.json(updated);
     } catch (e) {
         next(e);
     }
@@ -297,20 +328,29 @@ const DeleteProduct = async (req, res, next) => {
 };
 
 const UpdateOrderAdmin = async (req, res, next) => {
-
     const { order_id } = req.params;
     const input = req.body;
 
     try {
-        input.products.map(async (product) => {
-            const oldProduct = await Product.findById(new mongoose.Types.ObjectId(product._id));
-            if(oldProduct.price !== product.exact_price){
-                const updatedProduct = await Product.findByIdAndUpdate(product._id, {price: product.exact_price});
-            }
-            if(oldProduct.factor !== product.factor){
-                const updatedProduct = await Product.findByIdAndUpdate(product._id, {factor: product.factor});
-            }
-        });
+        if (input.status === 2 || input.status === 4) {
+            input.products.map(async (product) => {
+                const oldProduct = await Product.findById(
+                    new mongoose.Types.ObjectId(product._id)
+                );
+                if (oldProduct.price !== product.exact_price) {
+                    const updatedProduct = await Product.findByIdAndUpdate(
+                        product._id,
+                        { price: product.exact_price }
+                    );
+                }
+                if (oldProduct.factor !== product.factor) {
+                    const updatedProduct = await Product.findByIdAndUpdate(
+                        product._id,
+                        { factor: product.factor }
+                    );
+                }
+            });
+        }
 
         const updated = await Order.findByIdAndUpdate(order_id, input, {
             new: true,
@@ -394,6 +434,7 @@ export default {
     Create,
     Get,
     Return,
+    AcceptOrRejectOffer,
     DeleteProduct,
     GetList,
     GetListAdmin,
