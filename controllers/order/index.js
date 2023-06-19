@@ -285,10 +285,6 @@ const Return = async (req, res, next) => {
         return product._id.toString() === input.returnProductId;
     });
 
-    if (order.user_id != req.payload.user_id) {
-        return next(Boom.badRequest("This order is not yours."));
-    }
-
     if (order.status !== 6) {
         return next(Boom.badRequest("This order is not delivered."));
     }
@@ -296,10 +292,11 @@ const Return = async (req, res, next) => {
     try {
         order.products[productIndexId].return =
             order.products[productIndexId].return + parseInt(input.returnCount);
+        
+        order.products[productIndexId].piece = order.products[productIndexId].piece - parseInt(input.returnCount);
+        order.total_price = order.total_price - (order.products[productIndexId].price * parseInt(input.returnCount));
 
-        const updated = await Order.findByIdAndUpdate(order_id, order, {
-            new: true,
-        });
+        const updated = await Order.findByIdAndUpdate(order_id, order);
 
         res.json(updated);
     } catch (e) {
