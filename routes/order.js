@@ -19,9 +19,10 @@ router.get("/", Order.GetList);
 
 router.post("/", Order.Create);
 router.put("/:order_id/offer", Order.AcceptOrRejectOffer);
-router.put("/:order_id/return", Order.Return);
+router.put("/:order_id/return", grantAccess("createAny", "allProject"), Order.Return);
 router.put("/:order_id/delete", Order.DeleteProduct);
-router.put("/:order_id", Order.UpdateOrderAdmin);
+router.put("/:order_id", grantAccess("createAny", "allProject"), Order.UpdateOrderAdmin);
+router.put("/:order_id/addone", grantAccess("createAny", "allProject"), Order.AddProductToOrder);
 
 //admin
 

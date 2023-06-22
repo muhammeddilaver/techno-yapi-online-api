@@ -2,7 +2,7 @@ import Product from "../../models/product.js";
 import Order from "../../models/order.js";
 import Boom from "boom";
 import { OrderSchema } from "./validations.js";
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 import moment from "moment";
 
 const limit = 12;
@@ -344,6 +344,41 @@ const DeleteProduct = async (req, res, next) => {
     }
 };
 
+const AddProductToOrder = async (req, res, next) => {
+    const { order_id } = req.params;
+    const input = req.body;
+    let order = await Order.findById(new mongoose.Types.ObjectId(order_id));
+    
+    let product_info = await Product.findById(new mongoose.Types.ObjectId(input.product_id));
+    product_info = product_info.toObject();
+    
+    product_info.return = 0;
+    product_info.piece = 1;
+    product_info.price = product_info.price + (product_info.price * product_info.factor) / 100;
+    order.total_price += product_info.price * product_info.piece;
+
+    delete product_info.photos;
+    delete product_info.__v;
+    delete product_info.brand;
+    delete product_info.category_id;
+    delete product_info.description;
+    delete product_info.factor;
+    delete product_info.inventory;
+    delete product_info.name;
+    delete product_info.status;
+
+    order.products.push(product_info);
+    
+    try {
+
+        const updated = await order.save();
+        console.log(updated);
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+};
+
 const UpdateOrderAdmin = async (req, res, next) => {
     const { order_id } = req.params;
     const input = req.body;
@@ -463,4 +498,5 @@ export default {
     GetListAdmin,
     GetAdmin,
     UpdateOrderAdmin,
+    AddProductToOrder,
 };
