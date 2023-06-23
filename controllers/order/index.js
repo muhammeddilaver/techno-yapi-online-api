@@ -292,9 +292,12 @@ const Return = async (req, res, next) => {
     try {
         order.products[productIndexId].return =
             order.products[productIndexId].return + parseInt(input.returnCount);
-        
-        order.products[productIndexId].piece = order.products[productIndexId].piece - parseInt(input.returnCount);
-        order.total_price = order.total_price - (order.products[productIndexId].price * parseInt(input.returnCount));
+
+        order.products[productIndexId].piece =
+            order.products[productIndexId].piece - parseInt(input.returnCount);
+        order.total_price =
+            order.total_price -
+            order.products[productIndexId].price * parseInt(input.returnCount);
 
         const updated = await Order.findByIdAndUpdate(order_id, order);
 
@@ -348,13 +351,16 @@ const AddProductToOrder = async (req, res, next) => {
     const { order_id } = req.params;
     const input = req.body;
     let order = await Order.findById(new mongoose.Types.ObjectId(order_id));
-    
-    let product_info = await Product.findById(new mongoose.Types.ObjectId(input.product_id));
+
+    let product_info = await Product.findById(
+        new mongoose.Types.ObjectId(input.product_id)
+    );
     product_info = product_info.toObject();
-    
+
     product_info.return = 0;
     product_info.piece = 1;
-    product_info.price = product_info.price + (product_info.price * product_info.factor) / 100;
+    product_info.price =
+        product_info.price + (product_info.price * product_info.factor) / 100;
     order.total_price += product_info.price * product_info.piece;
 
     delete product_info.photos;
@@ -368,11 +374,9 @@ const AddProductToOrder = async (req, res, next) => {
     delete product_info.status;
 
     order.products.push(product_info);
-    
-    try {
 
+    try {
         const updated = await order.save();
-        console.log(updated);
         res.json(updated);
     } catch (e) {
         next(e);
@@ -389,23 +393,21 @@ const UpdateOrderAdmin = async (req, res, next) => {
                 const oldProduct = await Product.findById(
                     new mongoose.Types.ObjectId(product._id)
                 );
-                if(!product.status){
-                    await Product.findByIdAndUpdate(
-                        product._id,
-                        { status: true, name: product.name }
-                    );
+                if (!product.status) {
+                    await Product.findByIdAndUpdate(product._id, {
+                        status: true,
+                        name: product.name,
+                    });
                 }
                 if (oldProduct.price !== product.exact_price) {
-                    await Product.findByIdAndUpdate(
-                        product._id,
-                        { price: product.exact_price }
-                    );
+                    await Product.findByIdAndUpdate(product._id, {
+                        price: product.exact_price,
+                    });
                 }
                 if (oldProduct.factor !== product.factor) {
-                    await Product.findByIdAndUpdate(
-                        product._id,
-                        { factor: product.factor }
-                    );
+                    await Product.findByIdAndUpdate(product._id, {
+                        factor: product.factor,
+                    });
                 }
             });
         }
