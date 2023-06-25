@@ -24,17 +24,61 @@ const CreatePayment = async (req, res, next) => {
     }
 };
 
+const GetAccountStatement = async (req, res, next) => {
+    req.params.user_id = req.params.user_id || req.payload.user_id;
+    req.params.endDate = req.params.endDate || new Date();
+    if(!req.params.startDate){
+        req.params.startDate = new Date();
+        req.params.startDate.setMonth(req.params.startDate.getMonth() - 1);
+    }
+
+    try {
+        const payments = await Payments.find({
+            user_id: req.params.user_id,
+            date: {
+                $gte: req.params.startDate,
+                $lte: req.params.endDate,
+            },
+        });
+
+        const orders = await Order.find({
+            user_id: req.params.user_id,
+            delivery_date: {
+                $gte: req.params.startDate,
+                $lte: req.params.endDate,
+            },
+            status: 6,
+        });
+
+        const mergedList = [...orders, ...payments];
+        mergedList.sort((a, b) => new Date(a.delivery_date || a.date) - new Date(b.delivery_date || b.date));
+
+        res.json(mergedList);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const GetBalance = async (req, res, next) => {
-    if(!req.params.user_id){
+    if (!req.params.user_id) {
         req.params.user_id = req.payload.user_id;
     }
 
     try {
-        const payments = await Payments.find({user_id: req.params.user_id});
-        const orders = await Order.find({user_id: req.params.user_id, status: 6});
-        
-        const totalPayments = payments.reduce((total, payment) => total + payment.price, 0);
-        const totalOrders = orders.reduce((total, order) => total + order.total_price, 0);
+        const payments = await Payments.find({ user_id: req.params.user_id });
+        const orders = await Order.find({
+            user_id: req.params.user_id,
+            status: 6,
+        });
+
+        const totalPayments = payments.reduce(
+            (total, payment) => total + payment.price,
+            0
+        );
+        const totalOrders = orders.reduce(
+            (total, order) => total + order.total_price,
+            0
+        );
 
         const result = totalOrders - totalPayments;
 
@@ -42,7 +86,7 @@ const GetBalance = async (req, res, next) => {
             user_id: req.params.user_id,
             totalPayments,
             totalOrders,
-            result
+            result,
         });
     } catch (error) {
         next(error);
@@ -203,7 +247,6 @@ const UsersList = async (req, res, next) => {
 };
 
 const UsersSearch = async (req, res, next) => {
-
     const { keyword } = req.params;
 
     if (!keyword) {
@@ -228,6 +271,7 @@ const UsersSearch = async (req, res, next) => {
 export default {
     CreatePayment,
     GetBalance,
+    GetAccountStatement,
     Register,
     Login,
     RefreshToken,

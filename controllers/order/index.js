@@ -411,6 +411,10 @@ const UpdateOrderAdmin = async (req, res, next) => {
             });
         }
 
+        if(input.status === 6){
+            input.delivery_date = new Date();
+        }
+
         const updated = await Order.findByIdAndUpdate(order_id, input, {
             new: true,
         });
