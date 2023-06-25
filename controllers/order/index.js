@@ -19,7 +19,6 @@ const Create = async (req, res, next) => {
         input.user_id = req.payload.user_id;
         input.total_price = 0;
         input.products = new mongoose.Types.Array(JSON.parse(input.products));
-        console.log(input.status);
         input.status = input.status === 1 ? 1 : 3;
 
         for (let i = 0; i < input.products.length; i++) {

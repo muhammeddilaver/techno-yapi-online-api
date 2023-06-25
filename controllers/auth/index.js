@@ -1,4 +1,5 @@
 import Auth from "../../models/auth.js";
+import Order from "../../models/order.js";
 import Boom from "boom";
 
 import {
@@ -9,6 +10,44 @@ import {
 
 import { LoginValidation, RegisterValidation } from "./validations.js";
 import redis from "../../config/redis.js";
+import Payments from "../../models/payments.js";
+
+const CreatePayment = async (req, res, next) => {
+    const input = req.body;
+
+    try {
+        const payment = new Payments(input);
+        const savedData = await payment.save();
+        res.json(savedData);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const GetBalance = async (req, res, next) => {
+    if(!req.params.user_id){
+        req.params.user_id = req.payload.user_id;
+    }
+
+    try {
+        const payments = await Payments.find({user_id: req.params.user_id});
+        const orders = await Order.find({user_id: req.params.user_id, status: 6});
+        
+        const totalPayments = payments.reduce((total, payment) => total + payment.price, 0);
+        const totalOrders = orders.reduce((total, order) => total + order.total_price, 0);
+
+        const result = totalOrders - totalPayments;
+
+        res.json({
+            user_id: req.params.user_id,
+            totalPayments,
+            totalOrders,
+            result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 const Register = async (req, res, next) => {
     const input = req.body;
@@ -187,11 +226,13 @@ const UsersSearch = async (req, res, next) => {
 };
 
 export default {
+    CreatePayment,
+    GetBalance,
     Register,
     Login,
     RefreshToken,
     Logout,
     Me,
     UsersList,
-    UsersSearch
+    UsersSearch,
 };
