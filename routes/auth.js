@@ -15,8 +15,9 @@ router.get('/users', verifyAccessToken, grantAccess("createAny", "allProject"), 
 router.get('/users/search/:keyword', verifyAccessToken, grantAccess("createAny", "allProject"), auth.UsersSearch);
 
 router.post('/payment', verifyAccessToken, grantAccess("createAny", "allProject"), auth.CreatePayment);
-router.get('/payment/balance/:user_id', verifyAccessToken, grantAccess("createAny", "allProject"), auth.GetBalance);
-router.get('/payment/balance', verifyAccessToken, auth.GetBalance);
+
+router.get('/balance/:user_id', verifyAccessToken, grantAccess("createAny", "allProject"), auth.GetBalance);
+router.get('/balance', verifyAccessToken, auth.GetBalance);
 
 router.get('/summary/:user_id', verifyAccessToken, grantAccess("createAny", "allProject"), auth.GetAccountStatement);
 router.get('/summary/', verifyAccessToken, auth.GetAccountStatement);

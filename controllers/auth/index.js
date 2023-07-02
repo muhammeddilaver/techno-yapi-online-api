@@ -29,7 +29,7 @@ const GetAccountStatement = async (req, res, next) => {
     req.params.endDate = req.params.endDate || new Date();
     if(!req.params.startDate){
         req.params.startDate = new Date();
-        req.params.startDate.setMonth(req.params.startDate.getMonth() - 1);
+        req.params.startDate.setMonth(req.params.startDate.getMonth() - 5);
     }
 
     try {
