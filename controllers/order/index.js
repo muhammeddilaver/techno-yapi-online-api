@@ -4,6 +4,7 @@ import Boom from "boom";
 import { OrderSchema } from "./validations.js";
 import mongoose, { Mongoose } from "mongoose";
 import moment from "moment";
+import { currencyRates } from "../../helpers/currency.js";
 
 const limit = 12;
 
@@ -14,6 +15,8 @@ const Create = async (req, res, next) => {
     if (error) {
         return next(Boom.badRequest(error.details[0].message));
     }
+
+    const { dolar, euro } = await currencyRates();
 
     try {
         input.user_id = req.payload.user_id;
@@ -26,6 +29,14 @@ const Create = async (req, res, next) => {
                 let product_info = await Product.findById(
                     new mongoose.Types.ObjectId(input.products[i]._id)
                 );
+                product_info.price =
+                    product_info.price * (product_info.currency === "TL"
+                        ? 1
+                        : product_info.currency === "DOLAR"
+                        ? dolar
+                        : product_info.currency === "EURO"
+                        ? euro
+                        : 0);
                 input.products[i].price =
                     product_info.price +
                     (product_info.price * product_info.factor) / 100;
@@ -43,6 +54,7 @@ const Create = async (req, res, next) => {
                     inventory: 100,
                     name: input.products[i].name,
                     price: 0,
+                    currency: "TL",
                     status: false,
                 });
                 const savedProductData = await product.save();
@@ -50,6 +62,53 @@ const Create = async (req, res, next) => {
                 input.products[i].price = 0;
             }
         }
+
+        const order = new Order(input);
+        const savedData = await order.save();
+
+        res.json(savedData);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const AdminCreate = async (req, res, next) => {
+    const input = req.body;
+
+    try {
+        input.status = input.status === 1 ? 1 : 3;
+
+        for (let i = 0; i < input.products.length; i++) {
+            if (!input.products[i]._id) {
+                const product = new Product({
+                    photos: [],
+                    brand: input.products[i].brand,
+                    inventory: input.products[i].inventory,
+                    price: input.products[i].exact_price,
+                    factor: input.products[i].factor,
+                    name: input.products[i].name,
+                    currency: input.products[i].currency,
+                    status: true,
+                    category_id: new mongoose.Types.ObjectId(
+                        "646a7d15ffb4ef83553f20b3"
+                    ),
+                });
+                const savedProductData = await product.save();
+                input.products[i]._id = savedProductData._id;
+            }
+        }
+
+        delete input.products[i].brand;
+        delete input.products[i].category_id;
+        delete input.products[i].inventory;
+        delete input.products[i].photos;
+        delete input.products[i].exact_price;
+        delete input.products[i].factor;
+        delete input.products[i].name;
+        delete input.products[i].status;
+        delete input.products[i].currency;
+
+        input.products = new mongoose.Types.Array(JSON.parse(input.products));
 
         const order = new Order(input);
         const savedData = await order.save();
@@ -185,6 +244,8 @@ const Get = async (req, res, next) => {
             return next(Boom.badRequest("This order is not yours."));
         }
 
+        order[0].total_price = 0;
+
         for (let index = 0; index < order[0].products.length; index++) {
             let product_info = await Product.findById(
                 order[0].products[index]._id
@@ -193,6 +254,7 @@ const Get = async (req, res, next) => {
             order[0].products[index].photos = product_info.photos;
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
+            order[0].total_price += order[0].products[index].price;
         }
 
         res.json(order);
@@ -240,6 +302,7 @@ const GetAdmin = async (req, res, next) => {
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
             order[0].products[index].status = product_info.status;
+            order[0].products[index].currency = product_info.currency;
             if (order[0].status === 1 || order[0].status === 3) {
                 order[0].products[index].exact_price = product_info.price;
                 order[0].products[index].factor = product_info.factor;
@@ -274,7 +337,7 @@ const AcceptOrRejectOffer = async (req, res, next) => {
     } catch (e) {
         next(e);
     }
-};
+}; //npm install -g npm@9.8.1
 
 const Return = async (req, res, next) => {
     const { order_id } = req.params;
@@ -359,6 +422,14 @@ const AddProductToOrder = async (req, res, next) => {
     product_info.return = 0;
     product_info.piece = 1;
     product_info.price =
+                    product_info.price * (product_info.currency === "TL"
+                        ? 1
+                        : product_info.currency === "DOLAR"
+                        ? dolar
+                        : product_info.currency === "EURO"
+                        ? euro
+                        : 0);
+    product_info.price =
         product_info.price + (product_info.price * product_info.factor) / 100;
     order.total_price += product_info.price * product_info.piece;
 
@@ -370,6 +441,7 @@ const AddProductToOrder = async (req, res, next) => {
     delete product_info.factor;
     delete product_info.inventory;
     delete product_info.name;
+    delete product_info.currency;
     delete product_info.status;
 
     order.products.push(product_info);
@@ -408,10 +480,15 @@ const UpdateOrderAdmin = async (req, res, next) => {
                         factor: product.factor,
                     });
                 }
+                if (oldProduct.currency !== product.currency) {
+                    await Product.findByIdAndUpdate(product._id, {
+                        currency: product.currency,
+                    });
+                }
             });
         }
 
-        if(input.status === 6){
+        if (input.status === 6) {
             input.delivery_date = new Date();
         }
 
@@ -495,6 +572,7 @@ const Delete = async (req, res, next) => {
 
 export default {
     Create,
+    AdminCreate,
     Get,
     Return,
     AcceptOrRejectOffer,

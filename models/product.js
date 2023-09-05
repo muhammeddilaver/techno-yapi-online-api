@@ -31,6 +31,9 @@ const ProductSchema = new Schema({
     category_id: {
         type: Schema.Types.ObjectId,
     },
+    currency: {
+        type: String,
+    },
 });
 
 const Product = mongoose.model("product", ProductSchema);
