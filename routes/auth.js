@@ -11,6 +11,8 @@ router.post('/refresh_token', auth.RefreshToken);
 router.post('/logout', auth.Logout);
 router.get('/me', verifyAccessToken, auth.Me);
 
+router.get('/user/:user_id', verifyAccessToken, grantAccess("createAny", "allProject"), auth.GetUser);
+
 router.get('/users', verifyAccessToken, grantAccess("createAny", "allProject"), auth.UsersList);
 router.get('/users/search/:keyword', verifyAccessToken, grantAccess("createAny", "allProject"), auth.UsersSearch);
 

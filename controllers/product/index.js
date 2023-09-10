@@ -81,21 +81,25 @@ const Search = async (req, res, next) => {
                 return next(Boom.notFound("Product is not found."));
             }
 
-            for (let i = 0; i < products.length; i++) {
-                products[i].price =
-                    products[i].price +
-                    (products[i].price * products[i].factor) / 100;
+            if (req.payload.role !== "admin") {
+                for (let i = 0; i < products.length; i++) {
+                    products[i].price =
+                        products[i].price +
+                        (products[i].price * products[i].factor) / 100;
+                }
             }
         } else {
-            products = await Product.find({status: true})
+            products = await Product.find({ status: true })
                 .sort({ _id: -1 })
                 .skip(skip)
                 .limit(limit);
 
-            for (let i = 0; i < products.length; i++) {
-                products[i].price =
-                    products[i].price +
-                    (products[i].price * products[i].factor) / 100;
+            if (req.payload.role !== "admin") {
+                for (let i = 0; i < products.length; i++) {
+                    products[i].price =
+                        products[i].price +
+                        (products[i].price * products[i].factor) / 100;
+                }
             }
         }
 

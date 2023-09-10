@@ -7,9 +7,10 @@ import Order from "../controllers/order/index.js";
 import grantAccess from "../middleware/grantAccess.js";
 //grantAccess("createAny", "allProject")
 
-
 router.get("/admin/", grantAccess("createAny", "allProject"), Order.GetListAdmin);
+router.post("/admin/neworder/", grantAccess("createAny", "allProject"), Order.AdminCreate);
 router.get("/admin/:order_id", grantAccess("createAny", "allProject"), Order.GetAdmin);
+
 router.get(
     "/:order_id",
     // cache.route(),

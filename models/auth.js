@@ -21,6 +21,9 @@ const AuthSchema = new mongoose.Schema({
     password: {
         type: String
     },
+    vno: {
+        type: Number
+    },
     role: {
 		type: String,
 		default: "user",

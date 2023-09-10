@@ -30,7 +30,8 @@ const Create = async (req, res, next) => {
                     new mongoose.Types.ObjectId(input.products[i]._id)
                 );
                 product_info.price =
-                    product_info.price * (product_info.currency === "TL"
+                    product_info.price *
+                    (product_info.currency === "TL"
                         ? 1
                         : product_info.currency === "DOLAR"
                         ? dolar
@@ -75,45 +76,80 @@ const Create = async (req, res, next) => {
 const AdminCreate = async (req, res, next) => {
     const input = req.body;
 
+    const { dolar, euro } = await currencyRates();
+
     try {
-        input.status = input.status === 1 ? 1 : 3;
+        /* input.total_price = 0; */
+        input.products = new mongoose.Types.Array(input.products);
+        input.status = parseInt(input.status);
 
         for (let i = 0; i < input.products.length; i++) {
-            if (!input.products[i]._id) {
+            if (input.products[i]._id) {
+                let product_info = await Product.findById(
+                    new mongoose.Types.ObjectId(input.products[i]._id)
+                );
+
+                if (product_info.price !== input.products[i].exact_price) {
+                    await Product.findByIdAndUpdate(input.products[i]._id, {
+                        price: input.products[i].exact_price,
+                    });
+                }
+                if (product_info.factor !== input.products[i].factor) {
+                    await Product.findByIdAndUpdate(input.products[i]._id, {
+                        factor: input.products[i].factor,
+                    });
+                }
+                if (product_info.currency !== input.products[i].currency) {
+                    await Product.findByIdAndUpdate(input.products[i]._id, {
+                        currency: input.products[i].currency,
+                    });
+                }
+
+                /* input.products[i].price =
+                    input.products[i].exact_price *
+                    (input.products[i].currency === "TL"
+                        ? 1
+                        : input.products[i].currency === "DOLAR"
+                        ? dolar
+                        : input.products[i].currency === "EURO"
+                        ? euro
+                        : 0);   */              
+            } else {
                 const product = new Product({
                     photos: [],
-                    brand: input.products[i].brand,
-                    inventory: input.products[i].inventory,
-                    price: input.products[i].exact_price,
-                    factor: input.products[i].factor,
-                    name: input.products[i].name,
-                    currency: input.products[i].currency,
-                    status: true,
+                    brand: "",
                     category_id: new mongoose.Types.ObjectId(
                         "646a7d15ffb4ef83553f20b3"
                     ),
+                    description: "",
+                    factor: input.products[i].factor,
+                    inventory: 100,
+                    name: input.products[i].name,
+                    price: input.products[i].exact_price,
+                    currency: input.products[i].currency,
+                    status: true,
                 });
                 const savedProductData = await product.save();
                 input.products[i]._id = savedProductData._id;
             }
+                /* input.total_price +=
+                    input.products[i].price * input.products[i].piece; */
+
+            delete input.products[i].name;
+            delete input.products[i].factor;
+            delete input.products[i].brand;
+            delete input.products[i].photos;
+            delete input.products[i].inventory;
+            delete input.products[i].status;
+            delete input.products[i].currency;
+            delete input.products[i].exact_price;
         }
-
-        delete input.products[i].brand;
-        delete input.products[i].category_id;
-        delete input.products[i].inventory;
-        delete input.products[i].photos;
-        delete input.products[i].exact_price;
-        delete input.products[i].factor;
-        delete input.products[i].name;
-        delete input.products[i].status;
-        delete input.products[i].currency;
-
-        input.products = new mongoose.Types.Array(JSON.parse(input.products));
 
         const order = new Order(input);
         const savedData = await order.save();
 
         res.json(savedData);
+        /* res.json({});  */
     } catch (e) {
         next(e);
     }
@@ -244,8 +280,6 @@ const Get = async (req, res, next) => {
             return next(Boom.badRequest("This order is not yours."));
         }
 
-        order[0].total_price = 0;
-
         for (let index = 0; index < order[0].products.length; index++) {
             let product_info = await Product.findById(
                 order[0].products[index]._id
@@ -254,7 +288,6 @@ const Get = async (req, res, next) => {
             order[0].products[index].photos = product_info.photos;
             order[0].products[index].category_id = product_info.category_id;
             order[0].products[index].brand = product_info.brand;
-            order[0].total_price += order[0].products[index].price;
         }
 
         res.json(order);
@@ -422,13 +455,14 @@ const AddProductToOrder = async (req, res, next) => {
     product_info.return = 0;
     product_info.piece = 1;
     product_info.price =
-                    product_info.price * (product_info.currency === "TL"
-                        ? 1
-                        : product_info.currency === "DOLAR"
-                        ? dolar
-                        : product_info.currency === "EURO"
-                        ? euro
-                        : 0);
+        product_info.price *
+        (product_info.currency === "TL"
+            ? 1
+            : product_info.currency === "DOLAR"
+            ? dolar
+            : product_info.currency === "EURO"
+            ? euro
+            : 0);
     product_info.price =
         product_info.price + (product_info.price * product_info.factor) / 100;
     order.total_price += product_info.price * product_info.piece;

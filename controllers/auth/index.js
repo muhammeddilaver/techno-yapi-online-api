@@ -11,6 +11,7 @@ import {
 import { LoginValidation, RegisterValidation } from "./validations.js";
 import redis from "../../config/redis.js";
 import Payments from "../../models/payments.js";
+import mongoose from "mongoose";
 
 const CreatePayment = async (req, res, next) => {
     const input = req.body;
@@ -27,6 +28,7 @@ const CreatePayment = async (req, res, next) => {
 const GetAccountStatement = async (req, res, next) => {
     req.params.user_id = req.params.user_id || req.payload.user_id;
     req.params.endDate = req.params.endDate || new Date();
+
     if(!req.params.startDate){
         req.params.startDate = new Date();
         req.params.startDate.setMonth(req.params.startDate.getMonth() - 5);
@@ -34,7 +36,7 @@ const GetAccountStatement = async (req, res, next) => {
 
     try {
         const payments = await Payments.find({
-            user_id: req.params.user_id,
+            user_id: new mongoose.Types.ObjectId(req.params.user_id),
             date: {
                 $gte: req.params.startDate,
                 $lte: req.params.endDate,
@@ -42,7 +44,7 @@ const GetAccountStatement = async (req, res, next) => {
         });
 
         const orders = await Order.find({
-            user_id: req.params.user_id,
+            user_id: new mongoose.Types.ObjectId(req.params.user_id),
             delivery_date: {
                 $gte: req.params.startDate,
                 $lte: req.params.endDate,
@@ -236,6 +238,18 @@ const Me = async (req, res, next) => {
     }
 };
 
+const GetUser = async (req, res, next) => {
+    const user_id = req.params.user_id;
+
+    try {
+        const user = await Auth.findById(user_id).select("-password -__v");
+
+        res.json(user);
+    } catch (e) {
+        next(e);
+    }
+};
+
 const UsersList = async (req, res, next) => {
     try {
         const users = await Auth.find({});
@@ -254,9 +268,12 @@ const UsersSearch = async (req, res, next) => {
     }
 
     try {
-        const users = await Auth.find({
-            company_name: { $regex: new RegExp(keyword, "i") },
-        });
+        const users = await Auth.find(keyword === " " ? {
+            $or: [
+                {company_name: { $regex: new RegExp(keyword, "i") }},
+                {name: { $regex: new RegExp(keyword, "i") }}
+            ]
+        } : {}).limit(20);
 
         if (users.length == 0) {
             return next(Boom.notFound("User is not found."));
@@ -279,4 +296,5 @@ export default {
     Me,
     UsersList,
     UsersSearch,
+    GetUser,
 };
