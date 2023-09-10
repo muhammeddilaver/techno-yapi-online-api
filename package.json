@@ -8,7 +8,8 @@
   "license": "MIT",
   "homepage": "",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "npm run build"
   },
   "keywords": [],
   "dependencies": {
