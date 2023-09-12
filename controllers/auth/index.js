@@ -29,7 +29,7 @@ const GetAccountStatement = async (req, res, next) => {
     req.params.user_id = req.params.user_id || req.payload.user_id;
     req.params.endDate = req.params.endDate || new Date();
 
-    if(!req.params.startDate){
+    if (!req.params.startDate) {
         req.params.startDate = new Date();
         req.params.startDate.setMonth(req.params.startDate.getMonth() - 5);
     }
@@ -53,7 +53,11 @@ const GetAccountStatement = async (req, res, next) => {
         });
 
         const mergedList = [...orders, ...payments];
-        mergedList.sort((a, b) => new Date(a.delivery_date || a.date) - new Date(b.delivery_date || b.date));
+        mergedList.sort(
+            (a, b) =>
+                new Date(a.delivery_date || a.date) -
+                new Date(b.delivery_date || b.date)
+        );
 
         res.json(mergedList);
     } catch (error) {
@@ -268,12 +272,20 @@ const UsersSearch = async (req, res, next) => {
     }
 
     try {
-        const users = await Auth.find(keyword !== " " ? {
-            $or: [
-                {company_name: { $regex: new RegExp(keyword, "i") }},
-                {name: { $regex: new RegExp(keyword, "i") }}
-            ]
-        } : {}).limit(20);
+        const users = await Auth.find(
+            keyword !== " "
+                ? {
+                      $or: [
+                          {
+                              company_name: {
+                                  $regex: new RegExp(keyword, "i"),
+                              },
+                          },
+                          { name: { $regex: new RegExp(keyword, "i") } },
+                      ],
+                  }
+                : {}
+        ).limit(20);
 
         if (users.length == 0) {
             return next(Boom.notFound("User is not found."));

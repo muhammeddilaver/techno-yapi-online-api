@@ -158,7 +158,7 @@ const GetList = async (req, res, next) => {
     const skip = (parseInt(page) - 1) * limit;
 
     try {
-        const products = await Product.find({})
+        const products = await Product.find({ status: true })
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
