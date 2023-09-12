@@ -2,39 +2,9 @@ import Product from "../../models/product.js";
 import Boom from "boom";
 import ProductSchema from "./validations.js";
 import mongoose from "mongoose";
+import { makeCaseInsensitiveRegexPattern } from "../../helpers/searchHack.js";
 
 const limit = 12;
-
-const makeCaseInsensitiveRegexPattern = (keyword) => {
-    return keyword
-        .split('')
-        .map((char) => {
-            if (char === 'c' || char === 'ç') {
-                // Match either "c" or "ç" (case-insensitive)
-                return '[cCçC]';
-            }
-            if (char === 'ı' || char === 'i') {
-                // Match either "c" or "ç" (case-insensitive)
-                return '[iİıI]';
-            } 
-            if (char === 'u' || char === 'ü') {
-                // Match either "c" or "ç" (case-insensitive)
-                return '[uUüÜ]';
-            } 
-            if (char === 'o' || char === 'ö') {
-                // Match either "c" or "ç" (case-insensitive)
-                return '[oOöÖ]';
-            } 
-            if (char === 's' || char === 'ş') {
-                // Match either "c" or "ç" (case-insensitive)
-                return '[sSşŞ]';
-            } else {
-                // Escape other characters and make them case-insensitive
-                return `[${char}${char.toUpperCase()}]`;
-            }
-        })
-        .join('');
-}
 
 const Create = async (req, res, next) => {
     const input = req.body;
@@ -100,14 +70,19 @@ const Search = async (req, res, next) => {
     try {
         let products = null;
         if (keyword != " ") {
-            const regexPattern = makeCaseInsensitiveRegexPattern(keyword);
             products = await Product.find({
-                name: { $regex: new RegExp(regexPattern, "i") },
+                name: {
+                    $regex: new RegExp(
+                        makeCaseInsensitiveRegexPattern(keyword),
+                        "i"
+                    ),
+                },
                 status: true,
             })
                 .sort({ _id: -1 })
                 .skip(skip)
-                .limit(limit).collation({ locale: 'tr', strength: 2 });;
+                .limit(limit)
+                .collation({ locale: "tr", strength: 2 });
 
             if (products.length == 0) {
                 return next(Boom.notFound("Product is not found."));

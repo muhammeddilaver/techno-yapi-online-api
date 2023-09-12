@@ -12,6 +12,7 @@ import { LoginValidation, RegisterValidation } from "./validations.js";
 import redis from "../../config/redis.js";
 import Payments from "../../models/payments.js";
 import mongoose from "mongoose";
+import { makeCaseInsensitiveRegexPattern } from "../../helpers/searchHack.js";
 
 const CreatePayment = async (req, res, next) => {
     const input = req.body;
@@ -278,10 +279,20 @@ const UsersSearch = async (req, res, next) => {
                       $or: [
                           {
                               company_name: {
-                                  $regex: new RegExp(keyword, "i"),
+                                  $regex: new RegExp(
+                                      makeCaseInsensitiveRegexPattern(keyword),
+                                      "i"
+                                  ),
                               },
                           },
-                          { name: { $regex: new RegExp(keyword, "i") } },
+                          {
+                              name: {
+                                  $regex: new RegExp(
+                                      makeCaseInsensitiveRegexPattern(keyword),
+                                      "i"
+                                  ),
+                              },
+                          },
                       ],
                   }
                 : {}
