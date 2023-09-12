@@ -268,7 +268,7 @@ const UsersSearch = async (req, res, next) => {
     }
 
     try {
-        const users = await Auth.find(keyword === " " ? {
+        const users = await Auth.find(keyword !== " " ? {
             $or: [
                 {company_name: { $regex: new RegExp(keyword, "i") }},
                 {name: { $regex: new RegExp(keyword, "i") }}
