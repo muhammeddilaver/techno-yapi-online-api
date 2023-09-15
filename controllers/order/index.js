@@ -447,6 +447,8 @@ const AddProductToOrder = async (req, res, next) => {
     const input = req.body;
     let order = await Order.findById(new mongoose.Types.ObjectId(order_id));
 
+    const { dolar, euro } = await currencyRates();
+    
     let product_info = await Product.findById(
         new mongoose.Types.ObjectId(input.product_id)
     );
