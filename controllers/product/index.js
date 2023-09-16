@@ -79,6 +79,76 @@ const Search = async (req, res, next) => {
                 },
                 status: true,
             })
+                .select(
+                    "-__v -brand -category_id -currency -factor -inventory -price -photos"
+                )
+                .sort({ _id: -1 })
+                .skip(skip)
+                .limit(limit)
+                .collation({ locale: "tr", strength: 2 });
+
+            if (products.length == 0) {
+                return next(Boom.notFound("Product is not found."));
+            }
+
+            if (req.payload.role !== "admin") {
+                for (let i = 0; i < products.length; i++) {
+                    products[i].price =
+                        products[i].price +
+                        (products[i].price * products[i].factor) / 100;
+                }
+            }
+        } else {
+            products = await Product.find({ status: true })
+                .select(
+                    "-__v -brand -category_id -currency -factor -inventory -price -photos"
+                )
+                .sort({ _id: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            if (req.payload.role !== "admin") {
+                for (let i = 0; i < products.length; i++) {
+                    products[i].price =
+                        products[i].price +
+                        (products[i].price * products[i].factor) / 100;
+                }
+            }
+        }
+
+        res.json(products);
+    } catch (e) {
+        next(e);
+    }
+};
+
+const AdminSearch = async (req, res, next) => {
+    let { page } = req.query;
+
+    if (page < 1) {
+        page = 1;
+    }
+
+    const skip = (parseInt(page) - 1) * limit;
+
+    const { keyword } = req.params;
+
+    if (!keyword) {
+        return next(Boom.badRequest("Missing paramter (:keyword)"));
+    }
+
+    try {
+        let products = null;
+        if (keyword != " ") {
+            products = await Product.find({
+                name: {
+                    $regex: new RegExp(
+                        makeCaseInsensitiveRegexPattern(keyword),
+                        "i"
+                    ),
+                },
+                status: true,
+            })
                 .sort({ _id: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -186,6 +256,7 @@ export default {
     Create,
     Get,
     Search,
+    AdminSearch,
     Update,
     Delete,
     GetList,

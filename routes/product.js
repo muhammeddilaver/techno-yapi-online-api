@@ -15,6 +15,7 @@ router.post(
 );
 
 router.get("/search/:keyword", Product.Search);
+router.get("/admin/search/:keyword", Product.AdminSearch);
 
 router.get("/:product_id", Product.Get);
 

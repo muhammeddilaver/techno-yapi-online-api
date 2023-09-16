@@ -1,7 +1,7 @@
 import Product from "../../models/product.js";
 import Order from "../../models/order.js";
 import Boom from "boom";
-import { OrderSchema } from "./validations.js";
+import { CreateOrderSchema, OrderSchema } from "./validations.js";
 import mongoose, { Mongoose } from "mongoose";
 import moment from "moment";
 import { currencyRates } from "../../helpers/currency.js";
@@ -10,7 +10,7 @@ const limit = 12;
 
 const Create = async (req, res, next) => {
     const input = req.body;
-    const { error } = OrderSchema.validate(input);
+    const { error } = CreateOrderSchema.validate(input);
 
     if (error) {
         return next(Boom.badRequest(error.details[0].message));
@@ -21,7 +21,7 @@ const Create = async (req, res, next) => {
     try {
         input.user_id = req.payload.user_id;
         input.total_price = 0;
-        input.products = new mongoose.Types.Array(JSON.parse(input.products));
+        input.products = new mongoose.Types.Array(input.products);
         input.status = input.status === 1 ? 1 : 3;
 
         for (let i = 0; i < input.products.length; i++) {
@@ -50,7 +50,6 @@ const Create = async (req, res, next) => {
                     category_id: new mongoose.Types.ObjectId(
                         "646a7d15ffb4ef83553f20b3"
                     ),
-                    description: "",
                     factor: 0,
                     inventory: 100,
                     name: input.products[i].name,
@@ -121,7 +120,6 @@ const AdminCreate = async (req, res, next) => {
                     category_id: new mongoose.Types.ObjectId(
                         "646a7d15ffb4ef83553f20b3"
                     ),
-                    description: "",
                     factor: input.products[i].factor,
                     inventory: 100,
                     name: input.products[i].name,
@@ -448,26 +446,47 @@ const AddProductToOrder = async (req, res, next) => {
     let order = await Order.findById(new mongoose.Types.ObjectId(order_id));
 
     const { dolar, euro } = await currencyRates();
-    
-    let product_info = await Product.findById(
-        new mongoose.Types.ObjectId(input.product_id)
-    );
-    product_info = product_info.toObject();
 
-    product_info.return = 0;
-    product_info.piece = 1;
-    product_info.price =
-        product_info.price *
-        (product_info.currency === "TL"
-            ? 1
-            : product_info.currency === "DOLAR"
-            ? dolar
-            : product_info.currency === "EURO"
-            ? euro
-            : 0);
-    product_info.price =
-        product_info.price + (product_info.price * product_info.factor) / 100;
-    order.total_price += product_info.price * product_info.piece;
+    let product_info = null;
+
+    if(input.product_id !== "0"){
+        product_info = await Product.findById(
+            new mongoose.Types.ObjectId(input.product_id)
+        );
+        product_info = product_info.toObject();
+    
+        product_info.return = 0;
+        product_info.piece = 1;
+        product_info.price =
+            product_info.price *
+            (product_info.currency === "TL"
+                ? 1
+                : product_info.currency === "DOLAR"
+                ? dolar
+                : product_info.currency === "EURO"
+                ? euro
+                : 0);
+        product_info.price =
+            product_info.price + (product_info.price * product_info.factor) / 100;
+        order.total_price += product_info.price * product_info.piece;
+    } else {
+        const product = new Product({
+            photos: [],
+            brand: "",
+            category_id: new mongoose.Types.ObjectId(
+                "646a7d15ffb4ef83553f20b3"
+            ),
+            factor: 0,
+            inventory: 100,
+            name: input.name,
+            price: 0,
+            currency: "TL",
+            status: false,
+        });
+        product_info = await product.save();
+        product_info = product_info.toObject();
+        product_info.piece = 1;
+    }
 
     delete product_info.photos;
     delete product_info.__v;
