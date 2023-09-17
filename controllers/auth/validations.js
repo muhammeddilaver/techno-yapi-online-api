@@ -5,9 +5,9 @@ const RegisterValidation = Joi.object({
     company_name: Joi.string().required(),
     phone: Joi.string().required(),
     email: Joi.string().email().required(),
-    address: Joi.string().required(),
+    address: Joi.string().allow(''),
     password: Joi.string().min(6).required(),
-    vno: Joi.number().min(6),
+    vno: Joi.number(),
 });
 
 const LoginValidation = Joi.object({

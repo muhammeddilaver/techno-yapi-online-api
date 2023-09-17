@@ -274,7 +274,7 @@ const UsersSearch = async (req, res, next) => {
 
     try {
         const users = await Auth.find(
-            keyword !== " "
+            keyword !== "full"
                 ? {
                       $or: [
                           {
