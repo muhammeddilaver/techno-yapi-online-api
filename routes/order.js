@@ -25,6 +25,8 @@ router.put("/:order_id/delete", Order.DeleteProduct);
 router.put("/:order_id", grantAccess("createAny", "allProject"), Order.UpdateOrderAdmin);
 router.put("/:order_id/addone", grantAccess("createAny", "allProject"), Order.AddProductToOrder);
 
+router.get('/:order_id/pdf/:offer', Order.GetOrderPDF);
+
 //admin
 
 

@@ -5,11 +5,16 @@ import grantAccess from "../middleware/grantAccess.js";
 
 const router = express.Router();
 
+
+
 router.post('/register', auth.Register);
 router.post('/login', auth.Login);
 router.post('/refresh_token', auth.RefreshToken);
 router.post('/logout', auth.Logout);
 router.get('/me', verifyAccessToken, auth.Me);
+
+router.get('/pdf', verifyAccessToken, auth.GetAccountPDF);
+router.get('/pdf/:user_id', verifyAccessToken, auth.GetAccountPDF);
 
 router.get('/user/:user_id', verifyAccessToken, grantAccess("createAny", "allProject"), auth.GetUser);
 
