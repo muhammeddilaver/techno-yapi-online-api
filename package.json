@@ -1,6 +1,6 @@
 {
   "engines": {
-    "node": ">=18 <18.17.1"
+    "node": ">=18 <=18.17.1"
   },
   "name": "techno-yapi-online-api",
   "version": "1.0.0",
