@@ -1,6 +1,8 @@
 import Product from "../../models/product.js";
 import Order from "../../models/order.js";
 
+import "dotenv/config.js";
+
 import Boom from "boom";
 import { CreateOrderSchema } from "./validations.js";
 import mongoose from "mongoose";
@@ -1057,7 +1059,15 @@ const GetOrderPDF = async (req, res, next) => {
                 left: "0.5in",
             };
 
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                args: [
+                    "--disable-setuid-sandbox",
+                    "--no-sandbox",
+                    "--single-process",
+                    "--no-zygote",
+                ],
+                executablePath: process.env.NODE_ENV === 'production' ? process.env.PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
+            });
             const page = await browser.newPage();
 
             await page.setContent(content);
