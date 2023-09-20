@@ -694,181 +694,208 @@ const GetOrderPDF = async (req, res, next) => {
 		<head>
 			<meta charset="UTF-8" />
 			<style type="text/css">
-				#mainbody {
-					background-color: #FFFFFF;
-					font-family: 'Tahoma', "Times New Roman", Times, serif;
-					font-size: 11px;
-					color: #666666;
-				}
-				#mainbody h1,
-				#mainbody h2 {
-					padding-bottom: 3px;
-					padding-top: 3px;
-					margin-bottom: 5px;
-					text-transform: uppercase;
-					font-family: Arial, Helvetica, sans-serif;
-				}
-				#mainbody h1 {
-					font-size: 2.5em;
-					text-transform: none;
-				}
-				#mainbody h2 {
-					font-size: 1em;
-					color: brown;
-				}
-				#mainbody h3 {
-					font-size: 1em;
-					color: #333333;
-					text-align: justify;
-					margin: 0;
-					padding: 0;
-				}
-				#mainbody h4 {
-					font-size: 1.1em;
-					font-style: bold;
-					font-family: Arial, Helvetica, sans-serif;
-					color: #000000;
-					margin: 0;
-					padding: 0;
-				}
-				#mainbody hr {
-					height: 2px;
-					color: #000000;
-					background-color: #000000;
-					border-bottom: 1px solid #000000;
-				}
-				#mainbody p,
-				#mainbody ul,
-				#mainbody ol {
-					margin-top: 1.5em;
-				}
-				#mainbody ul,
-				#mainbody ol {
-					margin-left: 3em;
-				}
-				#mainbody blockquote {
-					margin-left: 3em;
-					margin-right: 3em;
-					font-style: italic;
-				}
-				#mainbody a {
-					text-decoration: none;
-					color: #70A300;
-				}
-				#mainbody a:hover {
-					border: none;
-					color: #70A300;
-				}
-				#despatchTable {
-					border-collapse: collapse;
-					font-size: 11px;
-					float: right;
-					border-color: gray;
-				}
-				#ettnTable {
-					border-collapse: collapse;
-					font-size: 11px;
-					border-color: gray;
-				}
-				#customerPartyTable {
-					border-width: 0px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: gray;
-					border-collapse: collapse;
-					background-color:
-				}
-				#customerIDTable {
-					border-width: 2px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: gray;
-					border-collapse: collapse;
-					background-color:
-				}
-				#customerIDTableTd {
-					border-width: 2px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: gray;
-					border-collapse: collapse;
-					background-color:
-				}
-				#lineTable {
-					border-width: 2px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: black;
-					border-collapse: collapse;
-					background-color: ;
-				}
-				#mainbody td.lineTableTd {
-					border-width: 1px;
-					padding: 1px;
-					border-style: inset;
-					border-color: black;
-					background-color: white;
-				}
-				#mainbody tr.lineTableTr {
-					border-width: 1px;
-					padding: 0px;
-					border-style: inset;
-					border-color: black;
-					background-color: white;
-					-moz-border-radius: ;
-				}
-				#lineTableDummyTd {
-					border-width: 1px;
-					border-color: white;
-					padding: 1px;
-					border-style: inset;
-					border-color: black;
-					background-color: white;
-				}
-				#mainbody td.lineTableBudgetTd {
-					border-width: 2px;
-					border-spacing: 0px;
-					padding: 1px;
-					border-style: inset;
-					border-color: black;
-					background-color: white;
-					-moz-border-radius: ;
-				}
-				#notesTable {
-					border-width: 2px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: black;
-					border-collapse: collapse;
-					background-color:
-				}
-				#notesTableTd {
-					border-width: 0px;
-					border-spacing: ;
-					border-style: inset;
-					border-color: black;
-					border-collapse: collapse;
-					background-color:
-				}
-				#mainbody table {
-					border-spacing: 0px;
-				}
-				#budgetContainerTable {
-					border-width: 0px;
-					border-spacing: 0px;
-					border-style: inset;
-					border-color: black;
-					border-collapse: collapse;
-					background-color: ;
-				}
-				#mainbody td {
-					border-color: gray;
-				}
+            #mainbody {
+                background-color: black;
+                font-family: 'Tahoma', "Times New Roman", Times, serif;
+                font-size: 16px;
+                color: #666666;
+            }
+    
+            #mainbody h1,
+            #mainbody h2 {
+                padding-bottom: 3px;
+                padding-top: 3px;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+    
+            #mainbody h1 {
+                font-size: 2.5em;
+                text-transform: none;
+            }
+    
+            #mainbody h2 {
+                font-size: 1em;
+                color: brown;
+            }
+    
+            #mainbody h3 {
+                font-size: 1em;
+                color: #333333;
+                text-align: justify;
+                margin: 0;
+                padding: 0;
+            }
+    
+            #mainbody h4 {
+                font-size: 1.1em;
+                font-style: bold;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #000000;
+                margin: 0;
+                padding: 0;
+            }
+    
+            #mainbody hr {
+                height: 2px;
+                color: #000000;
+                background-color: #000000;
+                border-bottom: 1px solid #000000;
+            }
+    
+            #mainbody p,
+            #mainbody ul,
+            #mainbody ol {
+                margin-top: 1.5em;
+            }
+    
+            #mainbody ul,
+            #mainbody ol {
+                margin-left: 3em;
+            }
+    
+            #mainbody blockquote {
+                margin-left: 3em;
+                margin-right: 3em;
+                font-style: italic;
+            }
+    
+            #mainbody a {
+                text-decoration: none;
+                color: #70A300;
+            }
+    
+            #mainbody a:hover {
+                border: none;
+                color: #70A300;
+            }
+    
+            #despatchTable {
+                border-collapse: collapse;
+                font-size: 16px;
+                float: right;
+                border-color: gray;
+            }
+    
+            #ettnTable {
+                border-collapse: collapse;
+                font-size: 11px;
+                border-color: gray;
+            }
+    
+            #customerPartyTable {
+                border-width: 0px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: gray;
+                border-collapse: collapse;
+                background-color:
+            }
+    
+            #customerIDTable {
+                border-width: 2px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: gray;
+                border-collapse: collapse;
+                background-color:
+            }
+    
+            #customerIDTableTd {
+                border-width: 2px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: gray;
+                border-collapse: collapse;
+                background-color:
+            }
+    
+            #lineTable {
+                border-width: 2px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: black;
+                border-collapse: collapse;
+                background-color: ;
+            }
+    
+            #mainbody td.lineTableTd {
+                border-width: 1px;
+                padding: 1px;
+                border-style: inset;
+                border-color: black;
+            }
+    
+            #mainbody tr.lineTableTr {
+                border-width: 1px;
+                padding: 0px;
+                border-style: inset;
+                border-color: black;
+                -moz-border-radius: ;
+            }
+    
+            #lineTableDummyTd {
+                border-width: 1px;
+                border-color: white;
+                padding: 1px;
+                border-style: inset;
+                border-color: black;
+                background-color: white;
+            }
+    
+            #mainbody td.lineTableBudgetTd {
+                border-width: 2px;
+                border-spacing: 0px;
+                padding: 1px;
+                border-style: inset;
+                border-color: black;
+                background-color: white;
+                -moz-border-radius: ;
+            }
+    
+            #notesTable {
+                border-width: 2px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: black;
+                border-collapse: collapse;
+                background-color:
+            }
+    
+            #notesTableTd {
+                border-width: 0px;
+                border-spacing: ;
+                border-style: inset;
+                border-color: black;
+                border-collapse: collapse;
+                background-color:
+            }
+    
+            #mainbody table {
+                border-spacing: 0px;
+            }
+    
+            #budgetContainerTable {
+                border-width: 0px;
+                border-spacing: 0px;
+                border-style: inset;
+                border-color: black;
+                border-collapse: collapse;
+                background-color: ;
+            }
+    
+            #mainbody td {
+                border-color: gray;
+            }
+            #lineTable .lineTableTr:nth-child(odd) {
+                background-color: lightgray !important; /* İkinci bir arka plan rengi */
+            }
 			</style>
 			<title>Sipariş Fişi</title>
 		</head>
 		<body style="margin-left=0.6in; margin-right=0.6in; margin-top=0.79in; margin-bottom=0.79in" id="mainbody">
-			<table cellpadding="0px" width="800" cellspacing="0px" border="0" style="border-color:blue; ">
+			<table cellpadding="0px" width="687" cellspacing="0px" border="0" style="border-color:blue; ">
 				<tbody>
 					<tr><td align="center" colspan="5"><h1>Sipariş Teklif Fişi</h1></td></tr>
 					<tr valign="top">
@@ -951,7 +978,7 @@ const GetOrderPDF = async (req, res, next) => {
 				</tbody>
 			</table>
 			<div id="lineTableAligner"><span>&nbsp;</span></div>
-			<table width="800" id="lineTable" border="1">
+			<table width="687" id="lineTable" border="1">
 				<tbody>
 					<tr class="lineTableTr">
 						<td align="center" style="width:3%" class="lineTableTd"><span style="font-weight:bold;">Sıra No</span>
@@ -991,7 +1018,7 @@ const GetOrderPDF = async (req, res, next) => {
 
             content += `</tbody>
 			</table>
-			<table width="800px" table-layout="fixed" id="budgetContainerTable">
+			<table width="687" table-layout="fixed" id="budgetContainerTable">
 				<tbody>
 					<tr>
 						<td valign="top" align="right">
@@ -1018,7 +1045,7 @@ const GetOrderPDF = async (req, res, next) => {
 			</table><br><br>`;
 
             if (offer !== "1") {
-                content += `<table width="800px" table-layout="fixed" id="budgetContainerTable">
+                content += `<table width="687" table-layout="fixed" id="budgetContainerTable">
             <tbody>
                 <tr>
                     <td valign="top" align="right">
@@ -1053,10 +1080,10 @@ const GetOrderPDF = async (req, res, next) => {
     `;
 
             const marginOptions = {
-                top: "0.5in",
-                right: "0.5in",
-                bottom: "0.5in",
-                left: "0.5in",
+                top: "0.3in",
+                right: "0.3in",
+                bottom: "0.3in",
+                left: "0.3in",
             };
 
             const browser = await puppeteer.launch({
@@ -1073,7 +1100,7 @@ const GetOrderPDF = async (req, res, next) => {
             await page.setContent(content);
 
             const pdfBuffer = await page.pdf({
-                format: "A4",
+                format: "A5",
                 margin: marginOptions,
             });
 

@@ -144,15 +144,14 @@ const AdminSearch = async (req, res, next) => {
                 name: {
                     $regex: new RegExp(
                         makeCaseInsensitiveRegexPattern(keyword),
-                        "i"
+                        "gi"
                     ),
                 },
                 status: true,
             })
                 .sort({ _id: -1 })
                 .skip(skip)
-                .limit(limit)
-                .collation({ locale: "tr", strength: 2 });
+                .limit(50);
 
             if (products.length == 0) {
                 return next(Boom.notFound("Product is not found."));

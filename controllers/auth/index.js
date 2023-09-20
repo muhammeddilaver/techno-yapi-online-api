@@ -354,7 +354,7 @@ const GetAccountPDF = async (req, res, next) => {
 					#mainbody {
 						background-color: #FFFFFF;
 						font-family: 'Tahoma', "Times New Roman", Times, serif;
-						font-size: 11px;
+						font-size: 16px;
 						color: #666666;
 					}
 					#mainbody h1,
@@ -418,7 +418,7 @@ const GetAccountPDF = async (req, res, next) => {
 					}
 					#despatchTable {
 						border-collapse: collapse;
-						font-size: 11px;
+						font-size: 16px;
 						float: right;
 						border-color: gray;
 					}
@@ -514,7 +514,7 @@ const GetAccountPDF = async (req, res, next) => {
 			</head>
 			
 			<body style="margin-left=0.6in; margin-right=0.6in; margin-top=0.79in; margin-bottom=0.79in" id="mainbody">
-				<table cellpadding="0px" width="800" cellspacing="0px" border="0" style="border-color:"blue; ">
+				<table cellpadding="0px" width="687" cellspacing="0px" border="0" style="border-color:"blue; ">
 					<tbody>
 						<tr>
 							<td align="center" colspan="5">
@@ -597,7 +597,7 @@ const GetAccountPDF = async (req, res, next) => {
 					</tbody>
 				</table>
 				<div id="lineTableAligner"><span>&nbsp;</span></div>
-				<table width="800" id="lineTable" border="1">
+				<table width="687" id="lineTable" border="1">
 					<tbody>
 						<tr class="lineTableTr">
 							<td align="center" style="width:7%" class="lineTableTd"><span style="font-weight:bold;">Tarih</span>
@@ -635,7 +635,7 @@ const GetAccountPDF = async (req, res, next) => {
 
         content += `</tbody>
 			</table>
-			<table width="800px" table-layout="fixed" id="budgetContainerTable">
+			<table width="687" table-layout="fixed" id="budgetContainerTable">
 				<tbody>
 					<tr>
 						<td valign="top" align="right">
@@ -662,10 +662,10 @@ const GetAccountPDF = async (req, res, next) => {
         `;
 
         const marginOptions = {
-            top: "0.5in",
-            right: "0.5in",
-            bottom: "0.5in",
-            left: "0.5in",
+            top: "0.3in",
+            right: "0.3in",
+            bottom: "0.3in",
+            left: "0.3in",
         };
 
         const browser = await puppeteer.launch();
@@ -674,7 +674,7 @@ const GetAccountPDF = async (req, res, next) => {
         await page.setContent(content);
 
         const pdfBuffer = await page.pdf({
-            format: "A4",
+            format: "A5",
             margin: marginOptions,
         });
 
