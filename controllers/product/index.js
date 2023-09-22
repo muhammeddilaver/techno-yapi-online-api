@@ -142,10 +142,7 @@ const AdminSearch = async (req, res, next) => {
         if (keyword != " ") {
             products = await Product.find({
                 name: {
-                    $regex: new RegExp(
-                        makeCaseInsensitiveRegexPattern(keyword),
-                        "gi"
-                    ),
+                    $regex: new RegExp(makeCaseInsensitiveRegexPattern(keyword).toString(), 'i'),
                 },
                 status: true,
             })
